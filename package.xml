@@ -16,21 +16,26 @@
     </maintainer>
   </maintainers>
   <release>
-    <version>0.4</version>
-    <date>2003-09-25</date>
+    <version>0.5</version>
+    <date>2003-12-14</date>
     <notes>
-      -deleting tmp files (Herman Kuiper).
-      -fixed hardcoded tmp dir (Herman Kuiper).
-      -fixed pass by reference warning (Herman Kuiper).
+      - BC break!!! OLE/OLE.php file moved to OLE.php to comply with PEAR
+        standards. You will have to change your require('OLE/OLE.php')'s
+        for require('OLE.php')'s
+      - If you are using Spreadsheet_Excel_Writer, do not upgrade to this
+        version yet. A new version of Spreadsheet_Excel_Writer will be
+        released soon so the BC break won't affect you.
+      - allowing setting of temp dir for OLE_PPS_File and OLE_PPS_Root objects
+      - fixed problem when reading files (not reading the whole OLE tree)
     </notes>
     <state>beta</state>
     <filelist>
-      <dir name="/" baseinstalldir="OLE/">
+      <dir name="/" baseinstalldir="/">
         <file role="php">OLE.php</file>
-        <file role="php">PPS.php</file>
-        <dir name="PPS">
-            <file role="php">Root.php</file>
-            <file role="php">File.php</file>
+        <file role="php" baseinstalldir="OLE">PPS.php</file>
+        <dir name="PPS" baseinstalldir="OLE">
+          <file role="php">Root.php</file>
+          <file role="php">File.php</file>
         </dir>
       </dir>
     </filelist>
