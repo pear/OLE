@@ -26,7 +26,7 @@ require_once ('OLE/PPS.php');
 * Class for creating Root PPS's for OLE containers
 *
 * @author   Xavier Noguer <xnoguer@php.net>
-* @category FileFormats
+* @category Structures
 * @package  OLE
 */
 class OLE_PPS_Root extends OLE_PPS

@@ -27,7 +27,7 @@ require_once('OLE.php');
 * Class for creating PPS's for OLE containers
 *
 * @author   Xavier Noguer <xnoguer@php.net>
-* @category FileFormats
+* @category Structures
 * @package  OLE
 */
 class OLE_PPS extends PEAR
