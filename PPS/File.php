@@ -54,7 +54,7 @@ class OLE_PPS_File extends OLE_PPS
 
         // this should be separated into an init method for error handling!!
         $this->_tmp_filename = tempnam("/tmp", "OLE_PPS_File");
-        $fh = fopen($this->_tmp_filename, "w+b");
+        $fh = @fopen($this->_tmp_filename, "w+b");
         /*if ($fh == false) {
             $this->raiseError("Can't create temporary file.");
         }*/

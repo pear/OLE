@@ -64,12 +64,13 @@ class OLE extends PEAR
     {
         $this->_list = array();
         // I need exceptions!!!
-        $fh = fopen($file, "r");
+        $fh = @fopen($file, "r");
+        // handle error
         $this->_file_handle = $fh;
         fseek($fh, 0);
         $signature = fread($fh, 8);
         /*if ("\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1" != $signature) {
-            return $this->raiseError("File doesn't seem to be an OLE container.");
+            return new PEAR_Error("File doesn't seem to be an OLE container.");
         }*/
         // useless 30 bytes?
         fseek($fh, 22, SEEK_CUR);
@@ -159,8 +160,7 @@ class OLE extends PEAR
             // give it a size
             $this->_list[count($this->_list) - 1]->Size = $size[''];
             // if we reached the beginning of the PPS WKs
-            if (ceil(((($start_block[''] + 1) * $big_block_size) + $size[''])/$big_block_size) >= ($pps_wk_start + 1))
-            {
+            if (ceil(((($start_block[''] + 1) * $big_block_size) + $size[''])/$big_block_size) >= ($pps_wk_start + 1)) {
                 break;
             }
             $pointer += OLE_PPS_SIZE;
