@@ -56,6 +56,7 @@ class OLE extends PEAR
 
     /**
     * Creates a new OLE container from the contents of the file given
+    * Remember to use ampersand when creating an OLE object ($my_ole =& new OLE('file');)
     *
     * @acces public
     * @param string $file
