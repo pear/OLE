@@ -76,7 +76,7 @@ class OLE extends PEAR
     {
         $fh = @fopen($file, "r");
         if ($fh == false) {
-            return $this->raiseError("Can't open file $file");
+            $this->raiseError("Can't open file $file");
         }
         $this->_file_handle = $fh;
         fseek($fh, 0);
@@ -135,7 +135,7 @@ class OLE extends PEAR
             fseek($this->_file_handle, $pointer);
             $pps_wk = fread($this->_file_handle, OLE_PPS_SIZE);
             if (strlen($pps_wk) != OLE_PPS_SIZE) {
-                return $this->raiseError("PPS at $pointer seems too short");
+                $this->raiseError("PPS at $pointer seems too short");
             }
             $name_length = unpack("c", substr($pps_wk, 64, 2));
             $name_length = $name_length[''] - 2;
@@ -145,7 +145,7 @@ class OLE extends PEAR
                 ($type[''] != OLE_PPS_TYPE_DIR) and
                 ($type[''] != OLE_PPS_TYPE_FILE))
             {
-                return $this->raiseError("PPS at $pointer has unknown type: {$type['']}");
+                $this->raiseError("PPS at $pointer has unknown type: {$type['']}");
             }
             $prev = unpack("V", substr($pps_wk, 68, 4));
             $next = unpack("V", substr($pps_wk, 72, 4));
