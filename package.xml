@@ -16,12 +16,13 @@
     </maintainer>
   </maintainers>
   <release>
-    <version>0.2.1</version>
-    <date>2003-05-12</date>
+    <version>0.3</version>
+    <date>2003-08-21</date>
     <notes>
-      Fixing install dir
+      -added OLE_PPS_File::init() initialization method.
+      -better error handling.
     </notes>
-    <state>alpha</state>
+    <state>beta</state>
     <filelist>
       <dir name="/" baseinstalldir="OLE/">
         <file role="php">OLE.php</file>
@@ -33,4 +34,24 @@
       </dir>
     </filelist>
   </release>
+  <changelog>
+    <release>
+      <version>0.3</version>
+      <date>2003-08-21</date>
+      <notes>
+        -added OLE_PPS_File::init() initialization method.
+        -better error handling.
+      </notes>
+      <state>beta</state>
+    </release>
+    <release>
+      <version>0.2.1</version>
+      <date>2003-05-12</date>
+      <state>alpha</state>
+      <notes>
+        Fixing install dir
+      </notes>
+      <state>alpha</state>
+    </release>
+  </changelog>
 </package>
