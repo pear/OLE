@@ -57,20 +57,20 @@ class OLE extends PEAR
     /**
     * Creates a new OLE object
     * Remember to use ampersand when creating an OLE object ($my_ole =& new OLE();)
-	* @access public
-	*/
-	function OLE()
-	{
-		$this->_list = array();
-	}
+    * @access public
+    */
+    function OLE()
+    {
+        $this->_list = array();
+    }
 
-	/**
+    /**
     * Reads an OLE container from the contents of the file given.
-	* It should always be used after OLE()
+    * It should always be used after OLE()
     *
     * @acces public
     * @param string $file
-	* @return mixed true on success, PEAR_Error on failure
+    * @return mixed true on success, PEAR_Error on failure
     */
     function read($file)
     {
@@ -105,7 +105,7 @@ class OLE extends PEAR
         if (PEAR::isError($ret)) {
             return $ret;
         }
-		return true;
+        return true;
     }
 
     /**
@@ -125,7 +125,7 @@ class OLE extends PEAR
     * @access private
     * @param integer $pps_wk_start   Position inside the OLE file where PPS WK's start
     * @param integer $big_block_size Size of big blobks in the OLE file
-	* @return mixed true on success, PEAR_Error on failure
+    * @return mixed true on success, PEAR_Error on failure
     */
     function _readPpsWks($pps_wk_start, $big_block_size)
     {
@@ -145,7 +145,7 @@ class OLE extends PEAR
                 ($type[''] != OLE_PPS_TYPE_DIR) and
                 ($type[''] != OLE_PPS_TYPE_FILE))
             {
-				return $this->raiseError("PPS at $pointer has unknown type: {$type['']}");
+                return $this->raiseError("PPS at $pointer has unknown type: {$type['']}");
             }
             $prev = unpack("V", substr($pps_wk, 68, 4));
             $next = unpack("V", substr($pps_wk, 72, 4));
@@ -233,6 +233,7 @@ class OLE extends PEAR
     * Transforms ASCII text to Unicode
     *
     * @access public
+    * @static
     * @param string $ascii The ASCII string to transform
     * @return string The string in Unicode
     */
@@ -249,6 +250,7 @@ class OLE extends PEAR
     * Returns a string for the OLE container with the date given
     *
     * @access public
+    * @static
     * @param integer $date A timestamp 
     * @return string The string for the OLE container
     */
@@ -258,7 +260,7 @@ class OLE extends PEAR
             return "\x00\x00\x00\x00\x00\x00\x00\x00";
         }
 
-        // factor used for separeting numbers into 4 bytes parts
+        // factor used for separating numbers into 4 bytes parts
         $factor = pow(2,32);
 
         // days from 1-1-1601 until the beggining of UNIX era
@@ -295,6 +297,7 @@ class OLE extends PEAR
     * Returns a timestamp from an OLE container's date
     *
     * @access public
+    * @static
     * @param integer $string A binary string with the encoded date
     * @return string The timestamp corresponding to the string
     */
@@ -304,7 +307,7 @@ class OLE extends PEAR
             return new PEAR_Error("Expecting 8 byte string");
         }
 
-        // factor used for separeting numbers into 4 bytes parts
+        // factor used for separating numbers into 4 bytes parts
         $factor = pow(2,32);
         $high_part = 0;
         for ($i=0; $i<4; $i++)
