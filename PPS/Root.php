@@ -73,7 +73,7 @@ class OLE_PPS_Root extends OLE_PPS
         // Open temp file if we are sending output to stdout
         if (($sFile == '-') or ($sFile == ''))
         {
-            $this->_tmp_filename = tempnam("/tmp", "OLE_PPS_Root");
+            $this->_tmp_filename = tempnam("", "OLE_PPS_Root");
             $this->_FILEH_ = @fopen($this->_tmp_filename,"w+b");
             if ($this->_FILEH_ == false) {
                 $this->raiseError("Can't create temporary file.");
@@ -307,9 +307,9 @@ class OLE_PPS_Root extends OLE_PPS
                 // Close file for each PPS, and unlink it
                 if (isset($raList[$i]->_PPS_FILE))
                 {
-                    //fclose($raList[$i]->_PPS_FILE);
-                    //$raList[$i]->_PPS_FILE = null;
-                    //@unlink($raList[$i]->_tmp_filename);
+                    @fclose($raList[$i]->_PPS_FILE);
+                    $raList[$i]->_PPS_FILE = null;
+                    @unlink($raList[$i]->_tmp_filename);
                 }
             }
         }

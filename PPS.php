@@ -193,21 +193,22 @@ class OLE_PPS extends PEAR
     }
 
     /**
-    * Updates index and pointers to previous, next and children PPS's for this PPS
-    * I don't think it'll work with Dir PPS's.
+    * Updates index and pointers to previous, next and children PPS's for this
+    * PPS. I don't think it'll work with Dir PPS's.
     *
     * @access private
-    * @param array &$raList Reference to an array of PPS's
-    * @return integer       The index for this PPS
+    * @param array &$pps_array Reference to the array of PPS's for the whole OLE
+    *                          container 
+    * @return integer          The index for this PPS
     */
-    function _savePpsSetPnt(&$raList) 
+    function _savePpsSetPnt(&$pps_array) 
     {
-        array_push($raList, &$this);
-        $this->No = count($raList) - 1;
+        $pps_array[count($pps_array)] = &$this;
+        $this->No = count($pps_array) - 1;
         $this->PrevPps = 0xFFFFFFFF;
         $this->NextPps = 0xFFFFFFFF;
         if (count($this->children) > 0) {
-            $this->DirPps = $this->children[0]->_savePpsSetPnt($raList);
+            $this->DirPps = $this->children[0]->_savePpsSetPnt($pps_array);
         }
         else {
             $this->DirPps = 0xFFFFFFFF;
