@@ -25,12 +25,10 @@
     <filelist>
       <dir name="/" baseinstalldir="OLE/">
         <file role="php">OLE.php</file>
-        <dir name="OLE">"
-          <file role="php">PPS.php</file>
-          <dir name="PPS">
-              <file role="php">Root.php</file>
-              <file role="php">File.php</file>
-          </dir>
+        <file role="php">PPS.php</file>
+        <dir name="PPS">
+            <file role="php">Root.php</file>
+            <file role="php">File.php</file>
         </dir>
       </dir>
     </filelist>
