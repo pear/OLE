@@ -54,7 +54,7 @@ class OLE_PPS_File extends OLE_PPS
     }
 
     /**
-    * Initialization method. Has to be called before before anything else.
+    * Initialization method. Has to be called right after OLE_PPS_File().
     *
     * @access public
     * @return mixed true on success. PEAR_Error on failure
