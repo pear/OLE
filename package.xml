@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE package SYSTEM "../package.dtd">
+<package>
+  <name>OLE</name>
+  <summary>Package for reading and writing OLE containers</summary>
+  <description> 
+  This package allows reading and writing of OLE (Object Linking and Embedding) files, the format used as container for Excel, Word and other MS file formats.
+  Documentation for the OLE format can be found at: http://user.cs.tu-berlin.de/~schwartz/pmh/guide.html</description>
+  <license>PHP</license>
+  <maintainers>
+    <maintainer>
+      <user>xnoguer</user>
+      <name>Xavier Noguer</name>
+      <email>xnoguer@php.net</email>
+      <role>lead</role>
+    </maintainer>
+  </maintainers>
+  <release>
+    <version>0.2</version>
+    <date>2003-04-08</date>
+    <notes>
+      First release
+    </notes>
+    <state>alpha</state>
+    <filelist>
+      <dir name="/" baseinstalldir="OLE/">
+        <file role="php">OLE.php</file>
+        <dir name="OLE">"
+          <file role="php">PPS.php</file>
+          <dir name="PPS">
+              <file role="php">Root.php</file>
+              <file role="php">File.php</file>
+          </dir>
+        </dir>
+      </dir>
+    </filelist>
+  </release>
+</package>
