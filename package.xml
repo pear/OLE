@@ -16,10 +16,10 @@
     </maintainer>
   </maintainers>
   <release>
-    <version>0.2</version>
-    <date>2003-04-08</date>
+    <version>0.2.1</version>
+    <date>2003-05-12</date>
     <notes>
-      First release
+      Fixing install dir
     </notes>
     <state>alpha</state>
     <filelist>
