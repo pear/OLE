@@ -76,14 +76,14 @@ class OLE_PPS_Root extends OLE_PPS
             $this->_tmp_filename = tempnam("/tmp", "OLE_PPS_Root");
             $this->_FILEH_ = @fopen($this->_tmp_filename,"w+b");
             if ($this->_FILEH_ == false) {
-                return new PEAR_Error("Can't create temporary file.");
+                $this->raiseError("Can't create temporary file.");
             }
         }
         else
         {
             $this->_FILEH_ = @fopen($sFile, "wb");
             if ($this->_FILEH_ == false) {
-                return new PEAR_Error("Can't open $sFile. It may be in use or protected.");
+                $this->raiseError("Can't open $sFile. It may be in use or protected.");
             }
         }
         // Make an array of PPS's (for Save)
