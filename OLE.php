@@ -66,7 +66,6 @@ class OLE extends PEAR
 
     /**
     * Reads an OLE container from the contents of the file given.
-    * It should always be used after OLE()
     *
     * @acces public
     * @param string $file
@@ -74,33 +73,46 @@ class OLE extends PEAR
     */
     function read($file)
     {
+        /* consider storing offsets as constants */
+        $big_block_size_offset = 30;
+        $iBdbCnt_offset        = 44;
+        $bd_start_offset       = 68;
+
         $fh = @fopen($file, "r");
         if ($fh == false) {
-            $this->raiseError("Can't open file $file");
+            return $this->raiseError("Can't open file $file");
         }
         $this->_file_handle = $fh;
+
+        /* begin reading OLE attributes */
         fseek($fh, 0);
         $signature = fread($fh, 8);
-        /*if ("\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1" != $signature) {
-            return new PEAR_Error("File doesn't seem to be an OLE container.");
-        }*/
-        // useless 30 bytes?
-        fseek($fh, 22, SEEK_CUR);
+        if ("\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1" != $signature) {
+            return $this->raiseError("File doesn't seem to be an OLE container.");
+        }
+        fseek($fh, $big_block_size_offset);
         $packed_array = unpack("v", fread($fh, 2));
         $big_block_size   = pow(2, $packed_array['']);
+
         $packed_array = unpack("v", fread($fh, 2));
         $small_block_size = pow(2, $packed_array['']);
         $i1stBdL = ($big_block_size - 0x4C) / OLE_LONG_INT_SIZE;
-        fseek($fh, 10, SEEK_CUR);
+
+        fseek($fh, $iBdbCnt_offset);
         $packed_array = unpack("V", fread($fh, 4));
         $iBdbCnt = $packed_array[''];
+
         $packed_array = unpack("V", fread($fh, 4));
         $pps_wk_start = $packed_array[''];
-        fseek($fh, 16, SEEK_CUR);
+
+        fseek($fh, $bd_start_offset);
         $packed_array = unpack("V", fread($fh, 4));
         $bd_start = $packed_array[''];
         $packed_array = unpack("V", fread($fh, 4));
         $bd_count = $packed_array[''];
+        $packed_array = unpack("V", fread($fh, 4));
+        $iAll = $packed_array[''];  // this may be wrong
+        /* create OLE_PPS objects from */
         $ret = $this->_readPpsWks($pps_wk_start, $big_block_size);
         if (PEAR::isError($ret)) {
             return $ret;
@@ -121,6 +133,7 @@ class OLE extends PEAR
 
     /**
     * Gets information about all PPS's on the OLE container from the PPS WK's
+    * creates an OLE_PPS object for each one.
     *
     * @access private
     * @param integer $pps_wk_start   Position inside the OLE file where PPS WK's start
@@ -135,9 +148,10 @@ class OLE extends PEAR
             fseek($this->_file_handle, $pointer);
             $pps_wk = fread($this->_file_handle, OLE_PPS_SIZE);
             if (strlen($pps_wk) != OLE_PPS_SIZE) {
-                $this->raiseError("PPS at $pointer seems too short");
+                break; // Excel likes to add a trailing byte sometimes 
+                //return $this->raiseError("PPS at $pointer seems too short: ".strlen($pps_wk));
             }
-            $name_length = unpack("c", substr($pps_wk, 64, 2));
+            $name_length = unpack("c", substr($pps_wk, 64, 2)); // FIXME (2 bytes??)
             $name_length = $name_length[''] - 2;
             $name = substr($pps_wk, 0, $name_length);
             $type = unpack("c", substr($pps_wk, 66, 1));
@@ -145,7 +159,7 @@ class OLE extends PEAR
                 ($type[''] != OLE_PPS_TYPE_DIR) and
                 ($type[''] != OLE_PPS_TYPE_FILE))
             {
-                $this->raiseError("PPS at $pointer has unknown type: {$type['']}");
+                return $this->raiseError("PPS at $pointer has unknown type: {$type['']}");
             }
             $prev = unpack("V", substr($pps_wk, 68, 4));
             $next = unpack("V", substr($pps_wk, 72, 4));
@@ -156,24 +170,54 @@ class OLE extends PEAR
             $time_2nd = substr($pps_wk, 108, 8);
             $start_block = unpack("V", substr($pps_wk, 116, 4));
             $size = unpack("V", substr($pps_wk, 120, 4));
-            // _data member will point to position in file.
+            // _data member will point to position in file!!
+            // OLE_PPS object is created with an empty children array!!
             $this->_list[] = new OLE_PPS(null, '', $type[''], $prev[''], $next[''],
                                          $dir[''], OLE::OLE2LocalDate($time_1st),
                                          OLE::OLE2LocalDate($time_2nd),
                                          ($start_block[''] + 1) * $big_block_size, array());
             // give it a size
             $this->_list[count($this->_list) - 1]->Size = $size[''];
-            // if we reached the beginning of the PPS WKs
-            if (ceil(((($start_block[''] + 1) * $big_block_size) + $size[''])/$big_block_size) >= ($pps_wk_start + 1)) {
+            // check if the PPS tree (starting from root) is complete
+            if ($this->_ppsTreeComplete(0)) {
                 break;
             }
             $pointer += OLE_PPS_SIZE;
         }
     }
  
+    /**
+    * It checks whether the PPS tree is complete (all PPS's read)
+    * starting with the given PPS (not necessarily root)
+    *
+    * @access private
+    * @param integer $index The index of the PPS from which we are checking
+    * @return boolean Whether the PPS tree for the given PPS is complete
+    */
+    function _ppsTreeComplete($index)
+    {
+        if ($this->_list[$index]->NextPps != -1) {
+            if (!isset($this->_list[$this->_list[$index]->NextPps])) {
+                return false;
+            }
+            else {
+                return $this->_ppsTreeComplete($this->_list[$index]->NextPps);
+            }
+        }
+        if ($this->_list[$index]->DirPps != -1) {
+            if (!isset($this->_list[$this->_list[$index]->DirPps])) {
+                return false;
+            }
+            else {
+                return $this->_ppsTreeComplete($this->_list[$index]->DirPps);
+            }
+        }
+        return true;
+    }
+
     /** 
-    * Checks whether a PPS is File PPS or not.
-    * Index should be real index, not array index.
+    * Checks whether a PPS is a File PPS or not.
+    * If there is no PPS for the index given, it will return false.
     *
     * @access public
     * @param integer $index The index for the PPS
@@ -181,7 +225,26 @@ class OLE extends PEAR
     */
     function isFile($index)
     {
-        return ($this->_list[$index]->Type == OLE_PPS_TYPE_FILE);
+        if (isset($this->_list[$index])) {
+            return ($this->_list[$index]->Type == OLE_PPS_TYPE_FILE);
+        }
+        return false;
+    }
+
+    /** 
+    * Checks whether a PPS is a Root PPS or not.
+    * If there is no PPS for the index given, it will return false.
+    *
+    * @access public
+    * @param integer $index The index for the PPS.
+    * @return bool true if it's a Root PPS, false otherwise
+    */
+    function isRoot($index)
+    {
+        if (isset($this->_list[$index])) {
+            return ($this->_list[$index]->Type == OLE_PPS_TYPE_ROOT);
+        }
+        return false;
     }
 
     /** 
@@ -197,28 +260,29 @@ class OLE extends PEAR
 
     /**
     * Gets data from a PPS
-    * Index should be real index, not array index.
+    * If there is no PPS for the index given, it will return an empty string.
     *
     * @access public
     * @param integer $index    The index for the PPS
-    * @param integer $position The position from which to start reading (relative to the PPS)
+    * @param integer $position The position from which to start reading
+    *                          (relative to the PPS)
     * @param integer $length   The amount of bytes to read (at most)
     * @return string The binary string containing the data requested
     */
     function getData($index, $position, $length)
     {
         // if position is not valid return empty string
-        if (($position >= $this->_list[$index]->Size) or ($position < 0)) {
+        if (!isset($this->_list[$index]) or ($position >= $this->_list[$index]->Size) or ($position < 0)) {
             return '';
         }
-        // _data member is actually a position
+        // Beware!!! _data member is actually a position
         fseek($this->_file_handle, $this->_list[$index]->_data + $position);
         return fread($this->_file_handle, $length);
     }
     
     /**
     * Gets the data length from a PPS
-    * Index should be real index, not array index.
+    * If there is no PPS for the index given, it will return 0.
     *
     * @access public
     * @param integer $index    The index for the PPS
@@ -226,11 +290,14 @@ class OLE extends PEAR
     */
     function getDataLength($index)
     {
-        return $this->_list[$index]->Size;
+        if (isset($this->_list[$index])) {
+            return $this->_list[$index]->Size;
+        }
+        return 0;
     }
 
     /**
-    * Transforms ASCII text to Unicode
+    * Utility function to transform ASCII text to Unicode
     *
     * @access public
     * @static
@@ -247,6 +314,7 @@ class OLE extends PEAR
     }
 
     /**
+    * Utility function
     * Returns a string for the OLE container with the date given
     *
     * @access public
