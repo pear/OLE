@@ -32,6 +32,12 @@ require_once ('OLE/PPS.php');
 class OLE_PPS_File extends OLE_PPS
 {
     /**
+    * The temporary dir for storing the OLE file
+    * @var string
+    */
+    var $_tmp_dir;
+
+    /**
     * The constructor
     *
     * @access public
@@ -40,6 +46,7 @@ class OLE_PPS_File extends OLE_PPS
     */
     function OLE_PPS_File($name)
     {
+        $this->_tmp_dir = '';
         $this->OLE_PPS(
             null, 
             $name,
@@ -54,6 +61,22 @@ class OLE_PPS_File extends OLE_PPS
     }
 
     /**
+    * Sets the temp dir used for storing the OLE file
+    *
+    * @access public
+    * @param string $dir The dir to be used as temp dir
+    * @return true if given dir is valid, false otherwise
+    */
+    function setTempDir($dir)
+    {
+        if (is_dir($dir)) {
+            $this->_tmp_dir = $dir;
+            return true;
+        }
+        return false;
+    }
+
+    /**
     * Initialization method. Has to be called right after OLE_PPS_File().
     *
     * @access public
@@ -61,7 +84,7 @@ class OLE_PPS_File extends OLE_PPS
     */
     function init()
     {
-        $this->_tmp_filename = tempnam("", "OLE_PPS_File");
+        $this->_tmp_filename = tempnam($this->_tmp_dir, "OLE_PPS_File");
         $fh = @fopen($this->_tmp_filename, "w+b");
         if ($fh == false) {
             return $this->raiseError("Can't create temporary file");

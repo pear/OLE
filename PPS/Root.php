@@ -31,16 +31,23 @@ require_once ('OLE/PPS.php');
 */
 class OLE_PPS_Root extends OLE_PPS
 {
-   /**
-   * Constructor
-   *
-   * @access public
-   * @param integer $time_1st A timestamp
-   * @param integer $time_2nd A timestamp
-   */
-   function OLE_PPS_Root($time_1st, $time_2nd, $raChild)
-   {
-       $this->OLE_PPS(
+    /**
+    * The temporary dir for storing the OLE file
+    * @var string
+    */
+    var $_tmp_dir;
+    
+    /**
+    * Constructor
+    *
+    * @access public
+    * @param integer $time_1st A timestamp
+    * @param integer $time_2nd A timestamp
+    */
+    function OLE_PPS_Root($time_1st, $time_2nd, $raChild)
+    {
+        $this->_tmp_dir = '';
+        $this->OLE_PPS(
            null, 
            OLE::Asc2Ucs('Root Entry'),
            OLE_PPS_TYPE_ROOT,
@@ -54,15 +61,31 @@ class OLE_PPS_Root extends OLE_PPS
     }
 
     /**
+    * Sets the temp dir used for storing the OLE file
+    *
+    * @access public
+    * @param string $dir The dir to be used as temp dir
+    * @return true if given dir is valid, false otherwise
+    */
+    function setTempDir($dir)
+    {
+        if (is_dir($dir)) {
+            $this->_tmp_dir = $dir;
+            return true;
+        }
+        return false;
+    }
+
+    /**
     * Method for saving the whole OLE container (including files).
     * In fact, if called with an empty argument (or '-'), it saves to a
     * temporary file and then outputs it's contents to stdout.
     *
-    * @param string $sFile The name of the file where to save the OLE container
+    * @param string $filename The name of the file where to save the OLE container
     * @access public
     * @return mixed true on success, PEAR_Error on failure
     */
-    function save($sFile)
+    function save($filename)
     {
         // Initial Setting for saving
         $this->_BIG_BLOCK_SIZE  = pow(2,
@@ -71,9 +94,9 @@ class OLE_PPS_Root extends OLE_PPS
                       ((isset($this->_SMALL_BLOCK_SIZE))?  $this->_adjust2($this->_SMALL_BLOCK_SIZE): 6));
  
         // Open temp file if we are sending output to stdout
-        if (($sFile == '-') or ($sFile == ''))
+        if (($filename == '-') or ($filename == ''))
         {
-            $this->_tmp_filename = tempnam("", "OLE_PPS_Root");
+            $this->_tmp_filename = tempnam($this->_tmp_dir, "OLE_PPS_Root");
             $this->_FILEH_ = @fopen($this->_tmp_filename,"w+b");
             if ($this->_FILEH_ == false) {
                 return $this->raiseError("Can't create temporary file.");
@@ -81,9 +104,9 @@ class OLE_PPS_Root extends OLE_PPS
         }
         else
         {
-            $this->_FILEH_ = @fopen($sFile, "wb");
+            $this->_FILEH_ = @fopen($filename, "wb");
             if ($this->_FILEH_ == false) {
-                return $this->raiseError("Can't open $sFile. It may be in use or protected.");
+                return $this->raiseError("Can't open $filename. It may be in use or protected.");
             }
         }
         // Make an array of PPS's (for Save)
@@ -104,7 +127,7 @@ class OLE_PPS_Root extends OLE_PPS
         // Write Big Block Depot and BDList and Adding Header informations
         $this->_saveBbd($iSBDcnt, $iBBcnt, $iPPScnt);
         // Close File, send it to stdout if necessary
-        if(($sFile == '-') or ($sFile == ''))
+        if(($filename == '-') or ($filename == ''))
         {
             fseek($this->_FILEH_, 0);
             fpassthru($this->_FILEH_);
