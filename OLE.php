@@ -34,11 +34,10 @@ require_once('PEAR.php');
 require_once 'OLE/PPS.php';
 
 /**
-* OLE package base class. It just contains utility methods by now.
-* Parsing methods should be added later.
+* OLE package base class.
 *
 * @author   Xavier Noguer <xnoguer@php.net>
-* @category FileFormats
+* @category Structures
 * @package  OLE
 */
 class OLE extends PEAR
@@ -56,7 +55,6 @@ class OLE extends PEAR
     var $_list;
 
     /**
-    * The constructor
     * Creates a new OLE container from the contents of the file given
     *
     * @acces public
@@ -80,73 +78,17 @@ class OLE extends PEAR
         $packed_array = unpack("v", fread($fh, 2));
         $small_block_size = pow(2, $packed_array['']);
         $i1stBdL = ($big_block_size - 0x4C) / OLE_LONG_INT_SIZE;
-        //echo "big_block_size = $big_block_size\n";
         fseek($fh, 10, SEEK_CUR);
         $packed_array = unpack("V", fread($fh, 4));
         $iBdbCnt = $packed_array[''];
-        //echo "iBdbCnt = $iBdbCnt\n";
         $packed_array = unpack("V", fread($fh, 4));
         $pps_wk_start = $packed_array[''];
         fseek($fh, 16, SEEK_CUR);
         $packed_array = unpack("V", fread($fh, 4));
         $bd_start = $packed_array[''];
-        //echo "bd_start = $bd_start\n";
         $packed_array = unpack("V", fread($fh, 4));
         $bd_count = $packed_array[''];
-        //echo "bd_count = $bd_count\n";
         $this->_readPpsWks($pps_wk_start, $big_block_size);
-        //echo strftime("%d de %m de %Y\n", $this->_list[0]->Time1st);
-        //exit;
-        // BDList
-        /*for ($i=0; $i<$i1stBdL and $i < $iBdbCnt; $i++) {
-            fseek($fh, 4, SEEK_CUR);
-        }
-        if ($i < $i1stBdL)
-        {
-            for ($j = 0; $j < ($i1stBdL-$i); $j++) {
-                fseek($fh, 4, SEEK_CUR);
-            }
-        }
-        $aList = array();
-        // 1st BD list
-        fseek($fh, 0x4c);
-        echo "$iBdbCnt : $i1stBdL\n";
-        $iGetCnt = ($iBdbCnt < $i1stCnt)? $iBdbCnt : $i1stBdL;
-        $iBdlCnt = floor($big_block_size / OLE_LONG_INT_SIZE) - 1;
-
-        $aList = unpack("V$iGetCnt", fread($fh, OLE_LONG_INT_SIZE*$iGetCnt));
-        $iBdbCnt -= $iGetCnt;
-        $block = $bd_start;
-        $iBdCnt = floor($big_block_size / OLE_LONG_INT_SIZE);
-
-        echo "$iBdbCnt\n";
-        // extra BD list
-        while (($iBdbCnt > 0) and _isNormalBlock($block))
-        {
-            fseek($fh, $block * $big_block_size);
-            $iGetCnt = ($iBdbCnt < $i1stCnt)? $iBdbCnt : $i1stBdL;
-            $bas_array = unpack("V$iGetCnt", fread($fh, OLE_LONG_INT_SIZE*$iGetCnt));
-            foreach ($bas_array as $bas) {
-                $aList[] = $bas;
-            }
-            $iBdbCnt -= $iGetCnt;
-            $block = unpack("V", fread($fh, OLE_LONG_INT_SIZE));
-        }
-        $iBlkNo = 0;
-        $bbd_info = array();
-        foreach ($aList as $iBdL)
-        {
-            fseek($fh, $iBdL * $big_block_size);
-            echo "$iBdL * $big_block_size\n";
-            $aWk = unpack("V$iBdCnt", fread($fh, $big_block_size));
-            exit;
-            for ($i=0; $i<$iBdCnt;$i++, $iBlkNo++)
-            {
-                if ($aWk[$i+1] != ($iBlkNo + 1)) {
-                    $bbd_info[$iBlkNo] = $aWk[$i+1];
-                }
-            }
-        }*/
     }
 
     /**
@@ -198,7 +140,6 @@ class OLE extends PEAR
             $time_2nd = substr($pps_wk, 108, 8);
             $start_block = unpack("V", substr($pps_wk, 116, 4));
             $size = unpack("V", substr($pps_wk, 120, 4));
-            //echo $type['']." {$name} : ".$size['']."\n";
             // reading data
             /*fseek($this->_file_handle, ($start_block[''] + 1) * $big_block_size);
             $temp_filename = tempnam("/tmp", "OLE");
@@ -217,10 +158,9 @@ class OLE extends PEAR
                                          ($start_block[''] + 1) * $big_block_size, array());
             // give it a size
             $this->_list[count($this->_list) - 1]->Size = $size[''];
-            // if we reached the beggining of the PPS WKs
+            // if we reached the beginning of the PPS WKs
             if (ceil(((($start_block[''] + 1) * $big_block_size) + $size[''])/$big_block_size) >= ($pps_wk_start + 1))
             {
-                //echo "passing Wk's position: ".$start_block['']." ".(((($start_block[''] + 1) * $big_block_size) + $size[''])/$big_block_size)." ".($pps_wk_start + 1)."\n";
                 break;
             }
             $pointer += OLE_PPS_SIZE;
@@ -285,11 +225,6 @@ class OLE extends PEAR
         return $this->_list[$index]->Size;
     }
 
-    /*function _isNormalBlock($block)
-    {
-        return ($block < 0xFFFFFFFC)? 1 : null;
-    }*/
-
     /**
     * Transforms ASCII text to Unicode
     *
@@ -300,9 +235,8 @@ class OLE extends PEAR
     function Asc2Ucs($ascii)
     {
         $rawname = '';
-        for($i = 0; $i < strlen($ascii); $i++)
-        {
-          $rawname .= $ascii{$i}."\x00";
+        for ($i = 0; $i < strlen($ascii); $i++) {
+            $rawname .= $ascii{$i}."\x00";
         }
         return $rawname;
     }
@@ -317,7 +251,7 @@ class OLE extends PEAR
     function LocalDate2OLE($date = null)
     {
         if (!isset($date)) {
-          return "\x00\x00\x00\x00\x00\x00\x00\x00";
+            return "\x00\x00\x00\x00\x00\x00\x00\x00";
         }
 
         // factor used for separeting numbers into 4 bytes parts
