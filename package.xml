@@ -16,11 +16,12 @@
     </maintainer>
   </maintainers>
   <release>
-    <version>0.3</version>
-    <date>2003-08-21</date>
+    <version>0.4</version>
+    <date>2003-09-25</date>
     <notes>
-      -added OLE_PPS_File::init() initialization method.
-      -better error handling.
+      -deleting tmp files (Herman Kuiper).
+      -fixed hardcoded tmp dir (Herman Kuiper).
+      -fixed pass by reference warning (Herman Kuiper).
     </notes>
     <state>beta</state>
     <filelist>
@@ -35,6 +36,16 @@
     </filelist>
   </release>
   <changelog>
+    <release>
+      <version>0.4</version>
+      <date>2003-09-25</date>
+      <notes>
+        -deleting tmp files (Herman Kuiper).
+        -fixed hardcoded tmp dir (Herman Kuiper).
+        -fixed pass by reference warning (Herman Kuiper).
+      </notes>
+      <state>beta</state>
+    </release>
     <release>
       <version>0.3</version>
       <date>2003-08-21</date>
