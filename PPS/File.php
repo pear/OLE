@@ -20,7 +20,7 @@
 // $Id$
 
 
-require_once ('OLE/PPS.php');
+require_once 'OLE/PPS.php';
 
 /**
 * Class for creating File PPS's for OLE containers
@@ -105,8 +105,7 @@ class OLE_PPS_File extends OLE_PPS
     {
         if ($this->_PPS_FILE) {
             fwrite($this->_PPS_FILE, $data);
-        }
-        else {
+        } else {
             $this->_data .= $data;
         }
     }

@@ -30,7 +30,7 @@ define('OLE_DATA_SIZE_SMALL', 0x1000);
 define('OLE_LONG_INT_SIZE',        4);
 define('OLE_PPS_SIZE',          0x80);
 
-require_once('PEAR.php');
+require_once 'PEAR.php';
 require_once 'OLE/PPS.php';
 
 /**
@@ -143,8 +143,7 @@ class OLE extends PEAR
     function _readPpsWks($pps_wk_start, $big_block_size)
     {
         $pointer = ($pps_wk_start + 1) * $big_block_size;
-        while (1)
-        {
+        while (1) {
             fseek($this->_file_handle, $pointer);
             $pps_wk = fread($this->_file_handle, OLE_PPS_SIZE);
             if (strlen($pps_wk) != OLE_PPS_SIZE) {
@@ -155,8 +154,8 @@ class OLE extends PEAR
             $name_length = $name_length[''] - 2;
             $name = substr($pps_wk, 0, $name_length);
             $type = unpack("c", substr($pps_wk, 66, 1));
-            if (($type[''] != OLE_PPS_TYPE_ROOT) and
-                ($type[''] != OLE_PPS_TYPE_DIR) and
+            if (($type[''] != OLE_PPS_TYPE_ROOT) &&
+                ($type[''] != OLE_PPS_TYPE_DIR) &&
                 ($type[''] != OLE_PPS_TYPE_FILE))
             {
                 return $this->raiseError("PPS at $pointer has unknown type: {$type['']}");
@@ -199,16 +198,14 @@ class OLE extends PEAR
         if ($this->_list[$index]->NextPps != -1) {
             if (!isset($this->_list[$this->_list[$index]->NextPps])) {
                 return false;
-            }
-            else {
+            } else {
                 return $this->_ppsTreeComplete($this->_list[$index]->NextPps);
             }
         }
         if ($this->_list[$index]->DirPps != -1) {
             if (!isset($this->_list[$this->_list[$index]->DirPps])) {
                 return false;
-            }
-            else {
+            } else {
                 return $this->_ppsTreeComplete($this->_list[$index]->DirPps);
             }
         }
@@ -272,7 +269,7 @@ class OLE extends PEAR
     function getData($index, $position, $length)
     {
         // if position is not valid return empty string
-        if (!isset($this->_list[$index]) or ($position >= $this->_list[$index]->Size) or ($position < 0)) {
+        if (!isset($this->_list[$index]) || ($position >= $this->_list[$index]->Size) || ($position < 0)) {
             return '';
         }
         // Beware!!! _data member is actually a position
@@ -346,14 +343,12 @@ class OLE extends PEAR
         // Make HEX string
         $res = '';
 
-        for ($i=0; $i<4; $i++)
-        {
+        for ($i = 0; $i < 4; $i++) {
             $hex = $low_part % 0x100;
             $res .= pack('c', $hex);
             $low_part /= 0x100;
         }
-        for ($i=0; $i<4; $i++)
-        {
+        for ($i = 0; $i < 4; $i++) {
             $hex = $high_part % 0x100;
             $res .= pack('c', $hex);
             $high_part /= 0x100;
@@ -378,8 +373,7 @@ class OLE extends PEAR
         // factor used for separating numbers into 4 bytes parts
         $factor = pow(2,32);
         $high_part = 0;
-        for ($i=0; $i<4; $i++)
-        {
+        for ($i = 0; $i < 4; $i++) {
             $al = unpack('C', $string{(7 - $i)});
             $high_part += $al[''];
             if ($i < 3) {
@@ -387,8 +381,7 @@ class OLE extends PEAR
             }
         }
         $low_part = 0;
-        for ($i=4; $i<8; $i++)
-        {
+        for ($i = 4; $i < 8; $i++) {
             $al = unpack('C', $string{(7 - $i)});
             $low_part += $al[''];
             if ($i < 7) {

@@ -20,8 +20,8 @@
 // $Id$
 
 
-require_once('PEAR.php');
-require_once('OLE.php');
+require_once 'PEAR.php';
+require_once 'OLE.php';
 
 /**
 * Class for creating PPS's for OLE containers
@@ -132,8 +132,7 @@ class OLE_PPS extends PEAR
         $this->children   = $children;
         if ($data != '') {
             $this->Size = strlen($data);
-        }
-        else {
+        } else {
             $this->Size = 0;
         }
     }
@@ -149,13 +148,11 @@ class OLE_PPS extends PEAR
         if (!isset($this->_data)) {
             return 0;
         }
-        if (isset($this->_PPS_FILE))
-        {
+        if (isset($this->_PPS_FILE)) {
             fseek($this->_PPS_FILE, 0);
             $stats = fstat($this->_PPS_FILE);
             return $stats[7];
-        }
-        else {
+        } else {
             return strlen($this->_data);
         }
     }
@@ -209,8 +206,7 @@ class OLE_PPS extends PEAR
         $this->NextPps = 0xFFFFFFFF;
         if (count($this->children) > 0) {
             $this->DirPps = $this->children[0]->_savePpsSetPnt($pps_array);
-        }
-        else {
+        } else {
             $this->DirPps = 0xFFFFFFFF;
         }
         return $this->No;
