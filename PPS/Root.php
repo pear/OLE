@@ -76,14 +76,14 @@ class OLE_PPS_Root extends OLE_PPS
             $this->_tmp_filename = tempnam("", "OLE_PPS_Root");
             $this->_FILEH_ = @fopen($this->_tmp_filename,"w+b");
             if ($this->_FILEH_ == false) {
-                $this->raiseError("Can't create temporary file.");
+                return $this->raiseError("Can't create temporary file.");
             }
         }
         else
         {
             $this->_FILEH_ = @fopen($sFile, "wb");
             if ($this->_FILEH_ == false) {
-                $this->raiseError("Can't open $sFile. It may be in use or protected.");
+                return $this->raiseError("Can't open $sFile. It may be in use or protected.");
             }
         }
         // Make an array of PPS's (for Save)
@@ -131,20 +131,17 @@ class OLE_PPS_Root extends OLE_PPS
         list($iSBDcnt, $iBBcnt, $iPPScnt) = array(0,0,0);
         $iSmallLen = 0;
         $iSBcnt = 0;
-        for ($i = 0; $i < count($raList); $i++)
-        {
-            if($raList[$i]->Type == OLE_PPS_TYPE_FILE)
-            {
-              $raList[$i]->Size = $raList[$i]->_DataLen();
-              if($raList[$i]->Size < OLE_DATA_SIZE_SMALL) {
-                $iSBcnt += floor($raList[$i]->Size / $this->_SMALL_BLOCK_SIZE)
-                                + (($raList[$i]->Size % $this->_SMALL_BLOCK_SIZE)? 1: 0);
-              }
-              else {
-                $iBBcnt += 
-                  (floor($raList[$i]->Size / $this->_BIG_BLOCK_SIZE) +
-                      (($raList[$i]->Size % $this->_BIG_BLOCK_SIZE)? 1: 0));
-              }
+        for ($i = 0; $i < count($raList); $i++) {
+            if($raList[$i]->Type == OLE_PPS_TYPE_FILE) {
+                $raList[$i]->Size = $raList[$i]->_DataLen();
+                if($raList[$i]->Size < OLE_DATA_SIZE_SMALL) {
+                    $iSBcnt += floor($raList[$i]->Size / $this->_SMALL_BLOCK_SIZE)
+                                  + (($raList[$i]->Size % $this->_SMALL_BLOCK_SIZE)? 1: 0);
+                }
+                else {
+                    $iBBcnt += (floor($raList[$i]->Size / $this->_BIG_BLOCK_SIZE) +
+                        (($raList[$i]->Size % $this->_BIG_BLOCK_SIZE)? 1: 0));
+                }
             }
         }
         $iSmallLen = $iSBcnt * $this->_SMALL_BLOCK_SIZE;
