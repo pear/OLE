@@ -55,18 +55,29 @@ class OLE extends PEAR
     var $_list;
 
     /**
-    * Creates a new OLE container from the contents of the file given
-    * Remember to use ampersand when creating an OLE object ($my_ole =& new OLE('file');)
+    * Creates a new OLE object
+    * Remember to use ampersand when creating an OLE object ($my_ole =& new OLE();)
+	* @access public
+	*/
+	function OLE()
+	{
+		$this->_list = array();
+	}
+
+	/**
+    * Reads an OLE container from the contents of the file given.
+	* It should always be used after OLE()
     *
     * @acces public
     * @param string $file
+	* @return mixed true on success, PEAR_Error on failure
     */
-    function OLE($file)
+    function read($file)
     {
-        $this->_list = array();
-        // I need exceptions!!!
         $fh = @fopen($file, "r");
-        // handle error
+        if ($fh == false) {
+            return $this->raiseError("Can't open file $file");
+        }
         $this->_file_handle = $fh;
         fseek($fh, 0);
         $signature = fread($fh, 8);
@@ -90,7 +101,11 @@ class OLE extends PEAR
         $bd_start = $packed_array[''];
         $packed_array = unpack("V", fread($fh, 4));
         $bd_count = $packed_array[''];
-        $this->_readPpsWks($pps_wk_start, $big_block_size);
+        $ret = $this->_readPpsWks($pps_wk_start, $big_block_size);
+        if (PEAR::isError($ret)) {
+            return $ret;
+        }
+		return true;
     }
 
     /**
@@ -110,6 +125,7 @@ class OLE extends PEAR
     * @access private
     * @param integer $pps_wk_start   Position inside the OLE file where PPS WK's start
     * @param integer $big_block_size Size of big blobks in the OLE file
+	* @return mixed true on success, PEAR_Error on failure
     */
     function _readPpsWks($pps_wk_start, $big_block_size)
     {
@@ -119,8 +135,7 @@ class OLE extends PEAR
             fseek($this->_file_handle, $pointer);
             $pps_wk = fread($this->_file_handle, OLE_PPS_SIZE);
             if (strlen($pps_wk) != OLE_PPS_SIZE) {
-                //echo "too short\n";
-                break; // not what we expected
+                return $this->raiseError("PPS at $pointer seems too short");
             }
             $name_length = unpack("c", substr($pps_wk, 64, 2));
             $name_length = $name_length[''] - 2;
@@ -130,8 +145,7 @@ class OLE extends PEAR
                 ($type[''] != OLE_PPS_TYPE_DIR) and
                 ($type[''] != OLE_PPS_TYPE_FILE))
             {
-                //echo "unknown type: {$type['']}\n";
-                break; // not what we expected
+				return $this->raiseError("PPS at $pointer has unknown type: {$type['']}");
             }
             $prev = unpack("V", substr($pps_wk, 68, 4));
             $next = unpack("V", substr($pps_wk, 72, 4));
@@ -142,17 +156,6 @@ class OLE extends PEAR
             $time_2nd = substr($pps_wk, 108, 8);
             $start_block = unpack("V", substr($pps_wk, 116, 4));
             $size = unpack("V", substr($pps_wk, 120, 4));
-            // reading data
-            /*fseek($this->_file_handle, ($start_block[''] + 1) * $big_block_size);
-            $temp_filename = tempnam("/tmp", "OLE");
-            $ftemp = fopen(tempnam("/tmp", "OLE"), "w+b");
-            for ($read = 0; $read < ($size['']/4096) - 1; $read++)
-            {
-                fwrite($ftemp, fread($this->_file_handle, 4096));
-            }
-            fwrite($ftemp, fread($this->_file_handle, $size[''] - $read));
-            fclose($ftemp);*/
-            //$data = fread($this->_file_handle, $size['']);
             // _data member will point to position in file.
             $this->_list[] = new OLE_PPS(null, '', $type[''], $prev[''], $next[''],
                                          $dir[''], OLE::OLE2LocalDate($time_1st),
