@@ -51,13 +51,21 @@ class OLE_PPS_File extends OLE_PPS
             null,
             '',
             array());
+    }
 
-        // this should be separated into an init method for error handling!!
+    /**
+    * Initialization method. Has to be called before before anything else.
+    *
+    * @access public
+    * @return mixed true on success. PEAR_Error on failure
+    */
+    function init()
+    {
         $this->_tmp_filename = tempnam("/tmp", "OLE_PPS_File");
         $fh = @fopen($this->_tmp_filename, "w+b");
-        /*if ($fh == false) {
-            $this->raiseError("Can't create temporary file.");
-        }*/
+        if ($fh == false) {
+            $this->raiseError("Can't create temporary file");
+        }
         $this->_PPS_FILE = $fh;
         if ($this->_PPS_FILE) {
             fseek($this->_PPS_FILE, 0);
