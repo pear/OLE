@@ -21,7 +21,7 @@
 
 
 require_once('PEAR.php');
-require_once('OLE/OLE.php');
+require_once('OLE.php');
 
 /**
 * Class for creating PPS's for OLE containers
