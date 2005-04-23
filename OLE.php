@@ -117,6 +117,7 @@ class OLE extends PEAR
         if (PEAR::isError($ret)) {
             return $ret;
         }
+
         return true;
     }
 
@@ -183,6 +184,8 @@ class OLE extends PEAR
             }
             $pointer += OLE_PPS_SIZE;
         }
+
+        return true;
     }
  
     /**

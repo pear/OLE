@@ -16,17 +16,12 @@
     </maintainer>
   </maintainers>
   <release>
-    <version>0.5</version>
-    <date>2003-12-14</date>
+    <version>0.5.1</version>
+    <date>2005-04-23</date>
     <notes>
-      - BC break!!! OLE/OLE.php file moved to OLE.php to comply with PEAR
-        standards. You will have to change your require('OLE/OLE.php')'s
-        for require('OLE.php')'s
-      - If you are using Spreadsheet_Excel_Writer, do not upgrade to this
-        version yet. A new version of Spreadsheet_Excel_Writer will be
-        released soon so the BC break won't affect you.
-      - allowing setting of temp dir for OLE_PPS_File and OLE_PPS_Root objects
-      - fixed problem when reading files (not reading the whole OLE tree)
+     - Coding Standard cleanups (by helgi)
+     - Bug #3951 OLE_PPS_File::init() does not return true on success (by helgi)
+     - Bug #3955 OLE::_readPpsWks() does not return true on success (by helgi)
     </notes>
     <state>beta</state>
     <filelist>
@@ -41,6 +36,21 @@
     </filelist>
   </release>
   <changelog>
+    <release>
+      <version>0.5</version>
+      <date>2003-12-14</date>
+      <notes>
+      - BC break!!! OLE/OLE.php file moved to OLE.php to comply with PEAR
+        standards. You will have to change your require('OLE/OLE.php')'s
+        for require('OLE.php')'s
+      - If you are using Spreadsheet_Excel_Writer, do not upgrade to this
+        version yet. A new version of Spreadsheet_Excel_Writer will be
+        released soon so the BC break won't affect you.
+      - allowing setting of temp dir for OLE_PPS_File and OLE_PPS_Root objects
+      - fixed problem when reading files (not reading the whole OLE tree)
+      </notes>
+      <state>beta</state>
+    </release>
     <release>
       <version>0.4</version>
       <date>2003-09-25</date>

@@ -93,6 +93,8 @@ class OLE_PPS_File extends OLE_PPS
         if ($this->_PPS_FILE) {
             fseek($this->_PPS_FILE, 0);
         }
+
+        return true;
     }
     
     /**

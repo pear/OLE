@@ -133,6 +133,7 @@ class OLE_PPS_Root extends OLE_PPS
         } else {
             @fclose($this->_FILEH_);
         }
+
         return true;
     }
 
