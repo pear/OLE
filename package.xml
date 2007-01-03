@@ -16,12 +16,10 @@
     </maintainer>
   </maintainers>
   <release>
-    <version>0.5.1</version>
-    <date>2005-04-23</date>
+    <version>0.5.2</version>
+    <date>2007-01-02</date>
     <notes>
-     - Coding Standard cleanups (by helgi)
-     - Bug #3951 OLE_PPS_File::init() does not return true on success (by helgi)
-     - Bug #3955 OLE::_readPpsWks() does not return true on success (by helgi)
+     - Bug #6516. Fix "PPS at 1 has unknown type" errors. (Christian Schmidt)
     </notes>
     <state>beta</state>
     <filelist>
@@ -36,6 +34,15 @@
     </filelist>
   </release>
   <changelog>
+    <release>
+      <version>0.5.1</version>
+      <date>2005-04-23</date>
+      <notes>
+       - Coding Standard cleanups (by helgi)
+       - Bug #3951 OLE_PPS_File::init() does not return true on success (by helgi)
+       - Bug #3955 OLE::_readPpsWks() does not return true on success (by helgi)
+      </notes>
+    </release>
     <release>
       <version>0.5</version>
       <date>2003-12-14</date>

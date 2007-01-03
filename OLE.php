@@ -91,27 +91,22 @@ class OLE extends PEAR
             return $this->raiseError("File doesn't seem to be an OLE container.");
         }
         fseek($fh, $big_block_size_offset);
-        $packed_array = unpack("v", fread($fh, 2));
-        $big_block_size   = pow(2, $packed_array['']);
+        list(, $big_block_size_exp) = unpack("v", fread($fh, 2));
+        $big_block_size   = pow(2, $big_block_size_exp);
 
-        $packed_array = unpack("v", fread($fh, 2));
-        $small_block_size = pow(2, $packed_array['']);
+        list(, $small_block_size_exp) = unpack("v", fread($fh, 2));
+        $small_block_size = pow(2, $small_block_size_exp);
         $i1stBdL = ($big_block_size - 0x4C) / OLE_LONG_INT_SIZE;
 
         fseek($fh, $iBdbCnt_offset);
-        $packed_array = unpack("V", fread($fh, 4));
-        $iBdbCnt = $packed_array[''];
+        list(, $iBdbCnt) = unpack("V", fread($fh, 4));
 
-        $packed_array = unpack("V", fread($fh, 4));
-        $pps_wk_start = $packed_array[''];
+        list(, $pps_wk_start) = unpack("V", fread($fh, 4));
 
         fseek($fh, $bd_start_offset);
-        $packed_array = unpack("V", fread($fh, 4));
-        $bd_start = $packed_array[''];
-        $packed_array = unpack("V", fread($fh, 4));
-        $bd_count = $packed_array[''];
-        $packed_array = unpack("V", fread($fh, 4));
-        $iAll = $packed_array[''];  // this may be wrong
+        list(, $bd_start) = unpack("V", fread($fh, 4));
+        list(, $bd_count) = unpack("V", fread($fh, 4));
+        list(, $iAll) = unpack("V", fread($fh, 4)); // this may be wrong
         /* create OLE_PPS objects from */
         $ret = $this->_readPpsWks($pps_wk_start, $big_block_size);
         if (PEAR::isError($ret)) {
@@ -151,33 +146,35 @@ class OLE extends PEAR
                 break; // Excel likes to add a trailing byte sometimes 
                 //return $this->raiseError("PPS at $pointer seems too short: ".strlen($pps_wk));
             }
-            $name_length = unpack("c", substr($pps_wk, 64, 2)); // FIXME (2 bytes??)
-            $name_length = $name_length[''] - 2;
-            $name = substr($pps_wk, 0, $name_length);
-            $type = unpack("c", substr($pps_wk, 66, 1));
-            if (($type[''] != OLE_PPS_TYPE_ROOT) &&
-                ($type[''] != OLE_PPS_TYPE_DIR) &&
-                ($type[''] != OLE_PPS_TYPE_FILE))
+            list(, $name_length) = unpack("c", substr($pps_wk, 64, 2));
+            $name = substr($pps_wk, 0, $name_length - 2);
+            // Simple conversion from UTF-16LE to ISO-8859-1
+            $name = str_replace("\x00", "", $name);
+            list(, $type) = unpack("c", substr($pps_wk, 66, 1));
+            if (($type != OLE_PPS_TYPE_ROOT) &&
+                ($type != OLE_PPS_TYPE_DIR) &&
+                ($type != OLE_PPS_TYPE_FILE))
             {
-                return $this->raiseError("PPS at $pointer has unknown type: {$type['']}");
+                return $this->raiseError("PPS at $pointer has unknown type: {$type}");
             }
-            $prev = unpack("V", substr($pps_wk, 68, 4));
-            $next = unpack("V", substr($pps_wk, 72, 4));
-            $dir  = unpack("V", substr($pps_wk, 76, 4));
+            list(, $prev) = unpack("V", substr($pps_wk, 68, 4));
+            list(, $next) = unpack("V", substr($pps_wk, 72, 4));
+            list(, $dir)  = unpack("V", substr($pps_wk, 76, 4));
             // there is no magic number, it can take different values.
             //$magic = unpack("V", strrev(substr($pps_wk, 92, 4)));
             $time_1st = substr($pps_wk, 100, 8);
             $time_2nd = substr($pps_wk, 108, 8);
-            $start_block = unpack("V", substr($pps_wk, 116, 4));
-            $size = unpack("V", substr($pps_wk, 120, 4));
+            list(, $start_block) = unpack("V", substr($pps_wk, 116, 4));
+            list(, $size) = unpack("V", substr($pps_wk, 120, 4));
+
             // _data member will point to position in file!!
             // OLE_PPS object is created with an empty children array!!
-            $this->_list[] = new OLE_PPS(null, '', $type[''], $prev[''], $next[''],
-                                         $dir[''], OLE::OLE2LocalDate($time_1st),
+            $this->_list[] = new OLE_PPS(null, $name, $type, $prev, $next,
+                                         $dir, OLE::OLE2LocalDate($time_1st),
                                          OLE::OLE2LocalDate($time_2nd),
-                                         ($start_block[''] + 1) * $big_block_size, array());
+                                         ($start_block + 1) * $big_block_size, array());
             // give it a size
-            $this->_list[count($this->_list) - 1]->Size = $size[''];
+            $this->_list[count($this->_list) - 1]->Size = $size;
             // check if the PPS tree (starting from root) is complete
             if ($this->_ppsTreeComplete(0)) {
                 break;
@@ -308,7 +305,7 @@ class OLE extends PEAR
     {
         $rawname = '';
         for ($i = 0; $i < strlen($ascii); $i++) {
-            $rawname .= $ascii{$i}."\x00";
+            $rawname .= $ascii{$i} . "\x00";
         }
         return $rawname;
     }
@@ -339,9 +336,9 @@ class OLE extends PEAR
         // multiply just to make MS happy
         $big_date *= 10000000;
 
-        $high_part = floor($big_date/$factor);
+        $high_part = floor($big_date / $factor);
         // lower 4 bytes
-        $low_part = floor((($big_date/$factor) - $high_part)*$factor);
+        $low_part = floor((($big_date / $factor) - $high_part) * $factor);
 
         // Make HEX string
         $res = '';
@@ -377,21 +374,19 @@ class OLE extends PEAR
         $factor = pow(2,32);
         $high_part = 0;
         for ($i = 0; $i < 4; $i++) {
-            $al = unpack('C', $string{(7 - $i)});
-            $high_part += $al[''];
+            list(, $high_part) = unpack('C', $string{(7 - $i)});
             if ($i < 3) {
                 $high_part *= 0x100;
             }
         }
         $low_part = 0;
         for ($i = 4; $i < 8; $i++) {
-            $al = unpack('C', $string{(7 - $i)});
-            $low_part += $al[''];
+            list(, $low_part) = unpack('C', $string{(7 - $i)});
             if ($i < 7) {
                 $low_part *= 0x100;
             }
         }
-        $big_date = ($high_part*$factor) + $low_part;
+        $big_date = ($high_part * $factor) + $low_part;
         // translate to seconds
         $big_date /= 10000000;
         
