@@ -111,5 +111,14 @@ class OLE_PPS_File extends OLE_PPS
             $this->_data .= $data;
         }
     }
+
+    /**
+     * Returns a stream for reading this file using fread() etc.
+     * @return  resource  a read-only stream
+     */
+    function getStream()
+    {
+        $this->ole->getStream($this);
+    }
 }
 ?>

@@ -105,17 +105,24 @@ class OLE_PPS extends PEAR
     var $children = array();
 
     /**
+    * Pointer to OLE container
+    * @var OLE
+    */
+    var $ole;
+
+    /**
     * The constructor
     *
     * @access public
     * @param integer $No   The PPS index
-    * @param string $name  The PPS name (in Unicode)
+    * @param string  $name The PPS name
     * @param integer $type The PPS type. Dir, Root or File
     * @param integer $prev The index of the previous PPS
     * @param integer $next The index of the next PPS
     * @param integer $dir  The index of it's first child if this is a Dir or Root PPS
     * @param integer $time_1st A timestamp
     * @param integer $time_2nd A timestamp
+    * @param string  $data  The (usually binary) source data of the PPS
     * @param array   $children Array containing children PPS for this PPS
     */
     function OLE_PPS($No, $name, $type, $prev, $next, $dir, $time_1st, $time_2nd, $data, $children)
