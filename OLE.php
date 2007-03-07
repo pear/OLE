@@ -238,7 +238,7 @@ class OLE extends PEAR
         $instanceId = end(array_keys($GLOBALS['_OLE_INSTANCES']));
 
         $path = 'ole-chainedblockstream://oleInstanceId=' . $instanceId;
-        if ($blockIdOrPps instanceof OLE_PPS) {
+        if (is_a($blockIdOrPps, 'OLE_PPS')) {
             $path .= '&blockId=' . $blockIdOrPps->_StartBlock;
             $path .= '&size=' . $blockIdOrPps->Size;
         } else {
