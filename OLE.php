@@ -44,13 +44,14 @@ $GLOBALS['_OLE_INSTANCES'] = array();
 /**
 * OLE package base class.
 *
-* @author   Xavier Noguer <xnoguer@php.net>
-* @author   Christian Schmidt <schmidt@php.net>
 * @category Structures
 * @package  OLE
+* @author   Xavier Noguer <xnoguer@php.net>
+* @author   Christian Schmidt <schmidt@php.net>
 */
 class OLE extends PEAR
 {
+
     /**
     * The file handle for reading an OLE container
     * @var resource
@@ -116,7 +117,7 @@ class OLE extends PEAR
     /**
     * Reads an OLE container from the contents of the file given.
     *
-    * @acces public
+    * @access public
     * @param string $file
     * @return mixed true on success, PEAR_Error on failure
     */
@@ -138,8 +139,8 @@ class OLE extends PEAR
             return $this->raiseError("Only Little-Endian encoding is supported.");
         }
         // Size of blocks and short blocks in bytes
-        $this->bigBlockSize = pow(2, $this->_readInt2($fh));
-        $this->smallBlockSize  = pow(2, $this->_readInt2($fh));
+        $this->bigBlockSize   = pow(2, $this->_readInt2($fh));
+        $this->smallBlockSize = pow(2, $this->_readInt2($fh));
 
         // Skip UID, revision number and version number
         fseek($fh, 44);
@@ -206,8 +207,8 @@ class OLE extends PEAR
     }
 
     /**
-     * @param  int  block id
-     * @param  int  byte offset from beginning of file
+     * @param int $blockId block id
+     * @return int byte offset from beginning of file
      * @access private
      */
     function _getBlockOffset($blockId)
@@ -218,8 +219,8 @@ class OLE extends PEAR
     /**
      * Returns a stream for use with fread() etc. External callers should
      * use OLE_PPS_File::getStream().
-     * @param   int|PPS   block id or PPS
-     * @return  resource  read-only stream
+     * @param int|PPS $blockIdOrPps block id or PPS
+     * @return resource read-only stream
      */
     function getStream($blockIdOrPps)
     {
@@ -249,8 +250,8 @@ class OLE extends PEAR
 
     /**
      * Reads a signed char.
-     * @param   resource  file handle
-     * @return  int
+     * @param resource $fh file handle
+     * @return int
      * @access private
      */
     function _readInt1($fh)
@@ -261,8 +262,8 @@ class OLE extends PEAR
 
     /**
      * Reads an unsigned short (2 octets).
-     * @param   resource  file handle
-     * @return  int
+     * @param resource $fh file handle
+     * @return int
      * @access private
      */
     function _readInt2($fh)
@@ -288,7 +289,7 @@ class OLE extends PEAR
     * creates an OLE_PPS object for each one.
     *
     * @access private
-    * @param  integer  the block id of the first block
+    * @param integer $blockId the block id of the first block
     * @return mixed true on success, PEAR_Error on failure
     */
     function _readPpsWks($blockId)
@@ -383,10 +384,9 @@ class OLE extends PEAR
     /** 
     * Checks whether a PPS is a File PPS or not.
     * If there is no PPS for the index given, it will return false.
-    *
-    * @access public
     * @param integer $index The index for the PPS
     * @return bool true if it's a File PPS, false otherwise
+    * @access public
     */
     function isFile($index)
     {
@@ -399,10 +399,9 @@ class OLE extends PEAR
     /** 
     * Checks whether a PPS is a Root PPS or not.
     * If there is no PPS for the index given, it will return false.
-    *
-    * @access public
     * @param integer $index The index for the PPS.
     * @return bool true if it's a Root PPS, false otherwise
+    * @access public
     */
     function isRoot($index)
     {
@@ -414,9 +413,8 @@ class OLE extends PEAR
 
     /** 
     * Gives the total number of PPS's found in the OLE container.
-    *
-    * @access public
     * @return integer The total number of PPS's found in the OLE container
+    * @access public
     */
     function ppsTotal()
     {
@@ -426,19 +424,21 @@ class OLE extends PEAR
     /**
     * Gets data from a PPS
     * If there is no PPS for the index given, it will return an empty string.
-    *
-    * @access public
     * @param integer $index    The index for the PPS
     * @param integer $position The position from which to start reading
     *                          (relative to the PPS)
     * @param integer $length   The amount of bytes to read (at most)
     * @return string The binary string containing the data requested
+    * @access public
     * @see OLE_PPS_File::getStream()
     */
     function getData($index, $position, $length)
     {
         // if position is not valid return empty string
-        if (!isset($this->_list[$index]) || ($position >= $this->_list[$index]->Size) || ($position < 0)) {
+        if (!isset($this->_list[$index]) ||
+            $position >= $this->_list[$index]->Size ||
+            $position < 0) {
+
             return '';
         }
         $fh = $this->getStream($this->_list[$index]);
@@ -450,10 +450,9 @@ class OLE extends PEAR
     /**
     * Gets the data length from a PPS
     * If there is no PPS for the index given, it will return 0.
-    *
-    * @access public
-    * @param integer $index    The index for the PPS
+    * @param integer $index The index for the PPS
     * @return integer The amount of bytes in data the PPS has
+    * @access public
     */
     function getDataLength($index)
     {
@@ -501,8 +500,9 @@ class OLE extends PEAR
         // days from 1-1-1601 until the beggining of UNIX era
         $days = 134774;
         // calculate seconds
-        $big_date = $days*24*3600 + gmmktime(date("H",$date),date("i",$date),date("s",$date),
-                                             date("m",$date),date("d",$date),date("Y",$date));
+        $big_date = $days * 24 * 3600 +
+            gmmktime(date("H",$date),date("i",$date),date("s",$date),
+                     date("m",$date),date("d",$date),date("Y",$date));
         // multiply just to make MS happy
         $big_date *= 10000000;
 
@@ -528,11 +528,10 @@ class OLE extends PEAR
 
     /**
     * Returns a timestamp from an OLE container's date
-    *
-    * @access public
-    * @static
     * @param integer $string A binary string with the encoded date
     * @return string The timestamp corresponding to the string
+    * @access public
+    * @static
     */
     function OLE2LocalDate($string)
     {
