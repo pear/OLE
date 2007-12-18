@@ -31,8 +31,6 @@ define('OLE_LONG_INT_SIZE',        4);
 define('OLE_PPS_SIZE',          0x80);
 
 require_once 'PEAR.php';
-require_once 'OLE/PPS/File.php';
-require_once 'OLE/PPS/Root.php';
 
 /**
 * Array for storing OLE instances that are accessed from
@@ -305,6 +303,7 @@ class OLE extends PEAR
             $type = $this->_readInt1($fh);
             switch ($type) {
             case OLE_PPS_TYPE_ROOT:
+                require_once 'OLE/PPS/Root.php';
                 $pps = new OLE_PPS_Root(null, null, array());
                 $this->root = $pps;
                 break;
@@ -313,6 +312,7 @@ class OLE extends PEAR
                                    null, null, null, null, array());
                 break;
             case OLE_PPS_TYPE_FILE:
+                require_once 'OLE/PPS/File.php';
                 $pps = new OLE_PPS_File($name);
                 break;
             default:
