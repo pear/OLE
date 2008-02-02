@@ -21,6 +21,7 @@
 
 
 require_once 'OLE/PPS.php';
+require_once 'System.php';
 
 /**
 * Class for creating Root PPS's for OLE containers
@@ -46,7 +47,7 @@ class OLE_PPS_Root extends OLE_PPS
     */
     function OLE_PPS_Root($time_1st, $time_2nd, $raChild)
     {
-        $this->_tmp_dir = '';
+        $this->_tmp_dir = System::tmpdir();
         $this->OLE_PPS(
            null, 
            OLE::Asc2Ucs('Root Entry'),
