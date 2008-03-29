@@ -21,19 +21,19 @@
   <email>xnoguer@php.net</email>
   <active>no</active>
  </lead>
- <date>2007-12-18</date>
+ <date>2008-??-??</date>
  <time>22:00:00</time>
  <version>
-  <release>0.6.1</release>
-  <api>0.6.1</api>
+  <release>0.6.2</release>
+  <api>0.6.2</api>
  </version>
  <stability>
   <release>beta</release>
   <api>beta</api>
  </stability>
  <license uri="http://www.php.net/license">PHP</license>
- <notes>- fixed bug #12693: wrong order of require_once
-- added missing file to package: ChainedBlockStream.php</notes>
+ <notes>- fixed bug #12944: Incompatibility open_basedir restriction.
+</notes>
  <contents>
   <dir name="/">
    <dir name="PPS">
@@ -57,6 +57,20 @@
  </dependencies>
  <phprelease />
  <changelog>
+  <release>
+   <version>
+    <release>0.6.1</release>
+    <api>0.6.1</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2007-12-18</date>
+   <license uri="http://www.php.net/license">PHP</license>
+   <notes>- fixed bug #12693: wrong order of require_once
+- added missing file to package: ChainedBlockStream.php</notes>
+  </release>
   <release>
    <version>
     <release>0.6.0</release>
