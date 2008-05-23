@@ -194,6 +194,11 @@ class OLE extends PEAR
         $this->sbat = array();
         $shortBlockCount = $sbbatBlockCount * $this->bigBlockSize / 4;
         $sbatFh = $this->getStream($sbatFirstBlockId);
+        if (!$sbatFh) {
+            // Avoid an infinite loop if ChainedBlockStream.php somehow is
+            // missing
+            return false;
+        }
         for ($blockId = 0; $blockId < $shortBlockCount; $blockId++) {
             $this->sbat[$blockId] = $this->_readInt4($sbatFh);
         }
