@@ -115,7 +115,7 @@ class OLE_PPS_Root extends OLE_PPS
         }
         // Make an array of PPS's (for Save)
         $aList = array();
-        $this->_savePpsSetPnt($aList);
+        OLE_PPS_Root::_savePpsSetPnt($aList, array($this));
         // calculate values for header
         list($iSBDcnt, $iBBcnt, $iPPScnt) = $this->_calcSize($aList); //, $rhInfo);
         // Save Header
@@ -252,8 +252,8 @@ class OLE_PPS_Root extends OLE_PPS
                   . pack("V", $iBBcnt+$iSBDcnt) //ROOT START
                   . pack("V", 0)
                   . pack("V", 0x1000)
-                  . pack("V", 0)                  //Small Block Depot
-                  . pack("V", 1)
+                  . pack("V", $iSBDcnt ? 0 : -2)                  //Small Block Depot
+                  . pack("V", $iSBDcnt)
           );
         // Extra BDList Start, Count
         if ($iBdCnt < $i1stBdL) {
