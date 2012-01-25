@@ -33,6 +33,12 @@ require_once 'System.php';
 class OLE_PPS_Root extends OLE_PPS
 {
     /**
+    * Flag to enable new logic
+    * @var bool
+    */
+    var $new_func = true;
+
+    /**
     * The temporary dir for storing the OLE file
     * @var string
     */
@@ -201,6 +207,9 @@ class OLE_PPS_Root extends OLE_PPS
     {
         $FILE = $this->_FILEH_;
   
+        if($this->new_func)
+          return $this->_create_header($iSBDcnt, $iBBcnt, $iPPScnt);
+
         // Calculate Basic Setting
         $iBlCnt = $this->_BIG_BLOCK_SIZE / OLE_LONG_INT_SIZE;
         $i1stBdL = ($this->_BIG_BLOCK_SIZE - 0x4C) / OLE_LONG_INT_SIZE;
@@ -406,6 +415,9 @@ class OLE_PPS_Root extends OLE_PPS
     */
     function _saveBbd($iSbdSize, $iBsize, $iPpsCnt) 
     {
+      if($this->new_func)
+        return $this->_create_big_block_chain($iSbdSize, $iBsize, $iPpsCnt);
+
         $FILE = $this->_FILEH_;
         // Calculate Basic Setting
         $iBbCnt = $this->_BIG_BLOCK_SIZE / OLE_LONG_INT_SIZE;
@@ -480,6 +492,246 @@ class OLE_PPS_Root extends OLE_PPS
                 }
             }
             fwrite($FILE, pack("V", -2));
+        }
+    }
+
+
+
+    /**
+     * New method to store Bigblock chain
+     *
+     * @access private
+     * @param integer $num_sb_blocks - number of Smallblock depot blocks
+     * @param integer $num_bb_blocks - number of Bigblock depot blocks
+     * @param integer $num_pps_blocks - number of PropertySetStorage blocks
+     */
+    function _create_big_block_chain($num_sb_blocks, $num_bb_blocks, $num_pps_blocks) 
+    {
+      $FILE = $this->_FILEH_;
+
+      $bbd_info = $this->_calculate_big_block_chain($num_sb_blocks, $num_bb_blocks, $num_pps_blocks);
+          
+      $data = "";
+
+      if($num_sb_blocks > 0)
+        {
+          for($i = 0; $i<($num_sb_blocks-1); $i++)
+            $data .= pack("V", $i+1);
+          $data .= pack("V", -2);
+        }
+
+      for($i = 0; $i<($num_bb_blocks-1); $i++)
+        $data .= pack("V", $i + $num_sb_blocks + 1);
+      $data .= pack("V", -2);
+
+      for($i = 0; $i<($num_pps_blocks-1); $i++)
+        $data .= pack("V", $i + $num_sb_blocks + $num_bb_blocks + 1);
+      $data .= pack("V", -2);
+
+      for($i = 0; $i < $bbd_info["0xFFFFFFFD_blockchain_entries"]; $i++)
+        $data .= pack("V", 0xFFFFFFFD);
+
+      for($i = 0; $i < $bbd_info["0xFFFFFFFC_blockchain_entries"]; $i++)
+        $data .= pack("V", 0xFFFFFFFC);
+
+      // Adjust for Block
+      $all_entries = $num_sb_blocks + $num_bb_blocks + $num_pps_blocks + $bbd_info["0xFFFFFFFD_blockchain_entries"] + $bbd_info["0xFFFFFFFC_blockchain_entries"];
+      if($all_entries % $bbd_info["entries_per_block"])
+        {
+          $rest = $bbd_info["entries_per_block"] - ($all_entries % $bbd_info["entries_per_block"]);
+          for($i = 0; $i < $rest; $i++)
+            $data .= pack("V", -1);
+        }
+
+      // Extra BDList
+      if($bbd_info["blockchain_list_entries"] > $bbd_info["header_blockchain_list_entries"])
+        {
+          $iN=0;
+          $iNb=0;
+          for($i = $bbd_info["header_blockchain_list_entries"]; $i < $bbd_info["blockchain_list_entries"]; $i++, $iN++)
+            {
+              if($iN >= ($bbd_info["entries_per_block"]-1))
+                {
+                  $iN = 0;
+                  $iNb++;
+                  $data .= pack("V", $num_sb_blocks + $num_bb_blocks + $num_pps_blocks + $bbd_info["0xFFFFFFFD_blockchain_entries"] + $iNb);
+                }
+
+              $data .= pack("V", $num_bb_blocks + $num_sb_blocks + $num_pps_blocks + $i);
+            }
+
+          $all_entries = $bbd_info["blockchain_list_entries"] - $bbd_info["header_blockchain_list_entries"];
+          if(($all_entries % ($bbd_info["entries_per_block"] - 1)))
+            {
+              $rest = ($bbd_info["entries_per_block"] - 1) - ($all_entries % ($bbd_info["entries_per_block"] - 1));
+              for($i = 0; $i < $rest; $i++)
+                $data .= pack("V", -1);
+            }
+
+          $data .= pack("V", -2);
+        }
+
+      /*
+        $this->dump($data, 0, strlen($data));
+        die;
+      */
+
+      fwrite($FILE, $data);
+    }
+
+    /**
+     * New method to store Header
+     *
+     * @access private
+     * @param integer $num_sb_blocks - number of Smallblock depot blocks
+     * @param integer $num_bb_blocks - number of Bigblock depot blocks
+     * @param integer $num_pps_blocks - number of PropertySetStorage blocks
+     */
+    function _create_header($num_sb_blocks, $num_bb_blocks, $num_pps_blocks) 
+    {
+      $FILE = $this->_FILEH_;
+
+      $bbd_info = $this->_calculate_big_block_chain($num_sb_blocks, $num_bb_blocks, $num_pps_blocks);
+  
+      // Save Header
+      fwrite($FILE,
+             "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1"
+             . "\x00\x00\x00\x00"
+             . "\x00\x00\x00\x00"
+             . "\x00\x00\x00\x00"
+             . "\x00\x00\x00\x00"
+             . pack("v", 0x3b)
+             . pack("v", 0x03)
+             . pack("v", -2)
+             . pack("v", 9)
+             . pack("v", 6)
+             . pack("v", 0)
+             . "\x00\x00\x00\x00"
+             . "\x00\x00\x00\x00"
+             . pack("V", $bbd_info["blockchain_list_entries"]) 
+             . pack("V", $num_sb_blocks + $num_bb_blocks) //ROOT START
+             . pack("V", 0)
+             . pack("V", 0x1000)
+             );
+
+      //Small Block Depot
+      if($num_sb_blocks > 0)
+        fwrite($FILE, pack("V", 0));
+      else
+        fwrite($FILE, pack("V", -2));
+
+      fwrite($FILE, pack("V", 1));
+
+      // Extra BDList Start, Count
+      if($bbd_info["blockchain_list_entries"] < $bbd_info["header_blockchain_list_entries"])
+        {
+          fwrite($FILE,
+                 pack("V", -2).      // Extra BDList Start
+                 pack("V", 0)        // Extra BDList Count
+                 );
+        }
+      else
+        {
+          fwrite($FILE, pack("V", $num_sb_blocks + $num_bb_blocks + $num_pps_blocks + $bbd_info["0xFFFFFFFD_blockchain_entries"]) . pack("V", $bbd_info["0xFFFFFFFC_blockchain_entries"]));
+        }
+
+      // BDList
+      for ($i=0; $i < $bbd_info["header_blockchain_list_entries"] and $i < $bbd_info["blockchain_list_entries"]; $i++) 
+        {
+          fwrite($FILE, pack("V", $num_bb_blocks + $num_sb_blocks + $num_pps_blocks + $i));
+        }
+
+      if($i < $bbd_info["header_blockchain_list_entries"])
+        {
+          for($j = 0; $j < ($bbd_info["header_blockchain_list_entries"]-$i); $j++) 
+            {
+              fwrite($FILE, (pack("V", -1)));
+            }
+        }
+    }
+
+    /**
+     * New method to calculate Bigblock chain
+     *
+     * @access private
+     * @param integer $num_sb_blocks - number of Smallblock depot blocks
+     * @param integer $num_bb_blocks - number of Bigblock depot blocks
+     * @param integer $num_pps_blocks - number of PropertySetStorage blocks
+     */
+    function _calculate_big_block_chain($num_sb_blocks, $num_bb_blocks, $num_pps_blocks)
+    {
+      $bbd_info["entries_per_block"] = $this->_BIG_BLOCK_SIZE / OLE_LONG_INT_SIZE;
+      $bbd_info["header_blockchain_list_entries"] = ($this->_BIG_BLOCK_SIZE - 0x4C) / OLE_LONG_INT_SIZE;
+      $bbd_info["blockchain_entries"] = $num_sb_blocks + $num_bb_blocks + $num_pps_blocks;
+      $bbd_info["0xFFFFFFFD_blockchain_entries"] = $this->get_number_of_pointer_blocks($bbd_info["blockchain_entries"]);
+      $bbd_info["blockchain_list_entries"] = $this->get_number_of_pointer_blocks($bbd_info["blockchain_entries"] + $bbd_info["0xFFFFFFFD_blockchain_entries"]);
+
+      // do some magic
+      $bbd_info["ext_blockchain_list_entries"] = 0;
+      $bbd_info["0xFFFFFFFC_blockchain_entries"] = 0;
+      if($bbd_info["blockchain_list_entries"] > $bbd_info["header_blockchain_list_entries"])
+        {
+          do
+            {
+              $bbd_info["blockchain_list_entries"] = $this->get_number_of_pointer_blocks($bbd_info["blockchain_entries"] + $bbd_info["0xFFFFFFFD_blockchain_entries"] + $bbd_info["0xFFFFFFFC_blockchain_entries"]);
+              $bbd_info["ext_blockchain_list_entries"] = $bbd_info["blockchain_list_entries"] - $bbd_info["header_blockchain_list_entries"];
+              $bbd_info["0xFFFFFFFC_blockchain_entries"] = $this->get_number_of_pointer_blocks($bbd_info["ext_blockchain_list_entries"]);
+              $bbd_info["0xFFFFFFFD_blockchain_entries"] = $this->get_number_of_pointer_blocks($num_sb_blocks + $num_bb_blocks + $num_pps_blocks + $bbd_info["0xFFFFFFFD_blockchain_entries"] + $bbd_info["0xFFFFFFFC_blockchain_entries"]);
+            }
+          while($bbd_info["blockchain_list_entries"] < $this->get_number_of_pointer_blocks($bbd_info["blockchain_entries"] + $bbd_info["0xFFFFFFFD_blockchain_entries"] + $bbd_info["0xFFFFFFFC_blockchain_entries"]));
+        }
+
+      return $bbd_info;
+    }
+
+    /**
+     * Calculates number of pointer blocks
+     *
+     * @access public
+     * @param integer $num_pointers - number of pointers
+     */
+    function get_number_of_pointer_blocks($num_pointers)
+    {
+      $pointers_per_block = $this->_BIG_BLOCK_SIZE / OLE_LONG_INT_SIZE;
+      
+      return floor($num_pointers / $pointers_per_block) + (($num_pointers % $pointers_per_block)? 1: 0);
+    }
+
+    /**
+     * Support method for some hexdumping
+     *
+     * @access public
+     * @param string $data - Binary data
+     * @param integer $from - Start offset of data to dump
+     * @param integer $to - Target offset of data to dump
+     */
+    function dump($data, $from, $to)
+    {
+      $chars = array();
+      $i = 0;
+      for($i = $from; $i < $to; $i++)
+        {
+          if(sizeof($chars) == 16)
+            {
+              printf("%08X (% 12d) |", $i-16, $i-16);
+              foreach($chars as $char)
+                printf(" %02X", $char);
+              print " |\n";
+
+              $chars = array();
+            }
+
+          $chars[] = ord($data[$i]);
+        }
+
+      if(sizeof($chars))
+        {
+          printf("%08X (% 12d) |", $i-sizeof($chars), $i-sizeof($chars));
+          foreach($chars as $char)
+            printf(" %02X", $char);
+          print " |\n";
+
+          $chars = array();
         }
     }
 }
