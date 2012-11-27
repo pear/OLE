@@ -620,7 +620,7 @@ class OLE_PPS_Root extends OLE_PPS
       else
         fwrite($FILE, pack("V", -2));
 
-      fwrite($FILE, pack("V", 1));
+      fwrite($FILE, pack("V", $num_sb_blocks));
 
       // Extra BDList Start, Count
       if($bbd_info["blockchain_list_entries"] < $bbd_info["header_blockchain_list_entries"])
