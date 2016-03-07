@@ -34,11 +34,11 @@ Bug #17685 OLE doesn&apos;t save multistreams
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
-   <file baseinstalldir="/" md5sum="154749b82508fa8e7ce2cae12e4d6236" name="OLE/ChainedBlockStream.php" role="php" />
-   <file baseinstalldir="/" md5sum="fcf77f4d5390a523ed9a3664af1def7b" name="OLE/PPS.php" role="php" />
-   <file baseinstalldir="/" md5sum="8917d559c1aa3a75bd0cc6017ddd0f0f" name="OLE/PPS/File.php" role="php" />
-   <file baseinstalldir="/" md5sum="8f6b586027b09539174828b6e9330c59" name="OLE/PPS/Root.php" role="php" />
-   <file baseinstalldir="/" md5sum="b22a2aaa8186adc723e09b26e96d7dd8" name="OLE.php" role="php" />
+   <file baseinstalldir="/" md5sum="fd704b3fd4d112d221a67bf9c0d2639f" name="OLE/ChainedBlockStream.php" role="php" />
+   <file baseinstalldir="/" md5sum="4877aa5c756e3907d003f506904c2b26" name="OLE/PPS.php" role="php" />
+   <file baseinstalldir="/" md5sum="1cc8347d9360232803d2e42aeb0fa448" name="OLE/PPS/File.php" role="php" />
+   <file baseinstalldir="/" md5sum="e4f497f9cbe0027e2358692be0a0b10c" name="OLE/PPS/Root.php" role="php" />
+   <file baseinstalldir="/" md5sum="8e6f250414bb1524534a18598ad909c6" name="OLE.php" role="php" />
   </dir>
  </contents>
  <dependencies>
