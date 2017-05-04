@@ -22,8 +22,14 @@
  * @since      File available since Release 0.6.0
  */
 
-require_once 'PEAR.php';
-require_once 'OLE.php';
+if (!class_exists('PEAR')) {
+    require_once 'PEAR.php';
+}
+
+if (!class_exists('OLE')) {
+    require_once 'OLE.php';
+}
+
 
 /**
  * Stream wrapper for reading data stored in an OLE file. Implements methods

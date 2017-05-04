@@ -20,8 +20,13 @@
 // $Id$
 
 
-require_once 'OLE/PPS.php';
-require_once 'System.php';
+if (!class_exists('OLE_PPS')) {
+    require_once 'OLE/PPS.php';
+}
+
+if (!class_exists('System')) {
+    require_once 'System.php';
+}
 
 /**
 * Class for creating File PPS's for OLE containers
