@@ -20,8 +20,13 @@
 // $Id$
 
 
-require_once 'PEAR.php';
-require_once 'OLE.php';
+if (!class_exists('PEAR')) {
+    require_once 'PEAR.php';
+}
+
+if (!class_exists('OLE')) {
+    require_once 'OLE.php';
+}
 
 /**
 * Class for creating PPS's for OLE containers
