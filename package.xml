@@ -17,10 +17,9 @@
   <active>no</active>
  </lead>
  <date>2012-01-26</date>
- <time>11:57:44</time>
  <version>
-  <release>1.0.0RC2</release>
-  <api>1.0.0RC2</api>
+  <release>1.0.0RC3</release>
+  <api>1.0.0RC3</api>
  </version>
  <stability>
   <release>beta</release>
@@ -28,9 +27,8 @@
  </stability>
  <license uri="http://www.php.net/license">PHP</license>
  <notes>
-QA release
-Bug #15904 Invalid Bigblock chain with files &gt; 200MB
-Bug #17685 OLE doesn&apos;t save multistreams
+Bug #19284:  RC2 breaks header in excel files from Spreadsheet_Excel_Writer
+Bug #21216:  Call to undefined method PEAR::OLE_PPS()
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
@@ -192,6 +190,22 @@ Rewrite of parser (no change to writer):
 QA release
 Bug #15904 Invalid Bigblock chain with files &gt; 200MB
 Bug #17685 OLE doesn&apos;t save multistreams
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>1.0.0RC3</release>
+    <api>1.0.0RC3</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2017-06-20</date>
+   <license uri="http://www.php.net/license">PHP</license>
+   <notes>
+Bug #19284:  RC2 breaks header in excel files from Spreadsheet_Excel_Writer
+Bug #21216:  Call to undefined method PEAR::OLE_PPS()
    </notes>
   </release>
  </changelog>
