@@ -59,7 +59,7 @@ class OLE_PPS_Root extends OLE_PPS
     {
         $system = new System();
         $this->_tmp_dir = $system->tmpdir();
-        $this->OLE_PPS(
+        parent::__construct(
            null, 
            OLE::Asc2Ucs('Root Entry'),
            OLE_PPS_TYPE_ROOT,
