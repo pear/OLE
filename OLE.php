@@ -59,6 +59,12 @@ class OLE extends PEAR
     var $_file_handle;
 
     /**
+     * Reference to the sbat stream
+     * @var resource
+     */
+    var $_small_handle;
+
+    /**
     * Array of PPS's found on the OLE container
     * @var array
     */
@@ -339,6 +345,10 @@ class OLE extends PEAR
             $pps->Size = $this->_readInt4($fh);
             $pps->No = count($this->_list);
             $this->_list[] = $pps;
+
+            if ($type == OLE_PPS_TYPE_ROOT) {
+                $this->_small_handle = $this->getStream($pps->_StartBlock);
+            }
 
             // check if the PPS tree (starting from root) is complete
             if (isset($this->root) &&
