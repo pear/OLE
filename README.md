@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/pear/OLE.svg?branch=master)](https://travis-ci.org/pear/OLE)
+
 This package is http://pear.php.net/package/OLE and has been migrated from https://svn.php.net/repository/pear/packages/OLE
 
 Please report all new issues via the PEAR bug tracker.
