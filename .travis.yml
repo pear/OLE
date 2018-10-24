@@ -12,8 +12,8 @@ php:
 matrix:
   fast_finish: true
   allow_failures:
-    - 7.3
-    - nightly
+    - php: 7.3
+    - php: nightly
 
 stages:
   - analyze
