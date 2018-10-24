@@ -18,6 +18,11 @@
 
 class OLE_Test extends PHPUnit_Framework_TestCase
 {
+    public static function setUpBeforeClass()
+    {
+        date_default_timezone_set('UTC');
+    }
+
     public function testAsc2Ucs()
     {
         $ucs = OLE::Asc2Ucs('abc123');
@@ -27,7 +32,7 @@ class OLE_Test extends PHPUnit_Framework_TestCase
     public function testLocalDate2OLE()
     {
         $data = OLE::LocalDate2OLE(1000000000);
-        $this->assertEquals("\x00\x28\xe7\xb4\x1c\x39\xc1\x01", $data);
+        $this->assertEquals("\x00\x80\xff\x44\xd1\x38\xc1\x01", $data);
     }
 
     public function testWrite()
@@ -44,8 +49,13 @@ class OLE_Test extends PHPUnit_Framework_TestCase
         $data = ob_get_clean();
         $this->assertTrue($res);
 
-        // that's 2560 bytes of binary data to compare: using sha1 for simplicity
+        // that's 2560 bytes of binary data to compare
         $this->assertEquals(2560, strlen($data));
-        $this->assertEquals('65a2a47ce025b35202dee0b706f541accb438488', sha1($data));
+
+        if (isset($_SERVER['GOLDEN'])) {
+            file_put_contents(__DIR__.'/data/Example.bin', $data);
+        }
+
+        $this->assertStringEqualsFile(__DIR__.'/data/Example.bin', $data);
     }
 }
