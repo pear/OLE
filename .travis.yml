@@ -34,6 +34,8 @@ cache:
     - $HOME/.composer/cache
 
 install:
+  - composer remove --no-update --dev
+        friendsofphp/php-cs-fixer
   - composer install --prefer-dist
 
 script:
