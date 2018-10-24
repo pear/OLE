@@ -15,6 +15,20 @@ matrix:
     - 7.3
     - nightly
 
+stages:
+  - analyze
+  - test
+
+jobs:
+  include:
+    - stage: analyze
+      php: 7.2
+      install:
+        - composer install --prefer-dist
+      script:
+        - php vendor/bin/php-cs-fixer fix --dry-run --diff
+        - composer validate
+
 cache:
   directories:
     - $HOME/.composer/cache
