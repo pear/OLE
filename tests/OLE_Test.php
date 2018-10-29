@@ -58,4 +58,16 @@ class OLE_Test extends PHPUnit_Framework_TestCase
 
         $this->assertStringEqualsFile(__DIR__.'/data/Example.bin', $data);
     }
+
+    public function testReadMsg()
+    {
+        $ole = new OLE();
+        $ole->read(__DIR__.'/data/Test_message.msg');
+
+        $el = $ole->_list[8];
+        $this->assertSame('__substg1.0_0037001F', $el->Name); // MAPI attribute PidTagSubject (ie message subject)
+        $dlen = $ole->getDataLength($el->No);
+        $data = $ole->getData($el->No, 0, $dlen);
+        $this->assertSame($data, hex2bin('540065007300740020006d00650073007300610067006500')); // UTF16-LE string "Test Message"
+    }
 }
