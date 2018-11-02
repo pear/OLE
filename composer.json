@@ -1,38 +1,44 @@
 {
+    "name": "pear/ole",
+    "type": "library",
+    "description": "This package allows reading and writing of OLE (Object Linking and Embedding) compound documents. This format is used as container for Excel (.xls), Word (.doc) and other Microsoft file formats.",
+    "license": "PHP-3.0",
     "authors": [
         {
-            "email": "schmidt@php.net",
             "name": "Christian Schmidt",
+            "email": "schmidt@php.net",
             "role": "Lead"
         },
         {
-            "email": "xnoguer@php.net",
             "name": "Xavier Noguer",
+            "email": "xnoguer@php.net",
             "role": "Lead"
         }
     ],
-    "autoload": {
-        "psr-0": {
-            "OLE": "./"
-        }
-    },
-    "description": "More info available on: http://pear.php.net/package/OLE",
-    "include-path": [
-        "./"
-    ],
-    "license": "PHP-3.0",
-    "name": "pear/ole",
-    "support": {
-        "issues": "http://pear.php.net/bugs/search.php?cmd=display&package_name[]=OLE",
-        "source": "https://github.com/pear/OLE"
-    },
-    "type": "library",
     "require": {
         "php": ">=5.6",
         "pear/pear_exception": "^1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "<6",
-        "friendsofphp/php-cs-fixer": "^2.13"
+        "friendsofphp/php-cs-fixer": "^2.13",
+        "pear/pear-core-minimal": "^1.10",
+        "phpunit/phpunit": "<6"
+    },
+    "autoload": {
+        "psr-0": {
+            "OLE": "./"
+        }
+    },
+    "autoload-dev": {
+        "psr-0": {
+            "OLE": "tests/"
+        }
+    },
+    "include-path": [
+        "./"
+    ],
+    "support": {
+        "issues": "http://pear.php.net/bugs/search.php?cmd=display&package_name[]=OLE",
+        "source": "https://github.com/pear/OLE"
     }
 }
