@@ -109,12 +109,13 @@ class OLE_ChainedBlockStream extends PEAR
             $blockId != $this->ole->root->_StartBlock) {
 
             // Block id refers to small blocks
-            $rootPos = $this->ole->_getBlockOffset($this->ole->root->_StartBlock);
+            $rootPos = 0;
             while ($blockId != -2) {
-                $pos = $rootPos + $blockId * $this->ole->bigBlockSize;
-                $blockId = $this->ole->sbat[$blockId];
-                fseek($this->ole->_file_handle, $pos);
-                $this->data .= fread($this->ole->_file_handle, $this->ole->bigBlockSize);
+                $pos = $rootPos + $blockId * $this->ole->smallBlockSize;
+
+                $blockId = $this->ole->sbat[$blockId];                
+                fseek($this->ole->_small_handle, $pos);
+                $this->data .= fread($this->ole->_small_handle, $this->ole->smallBlockSize);
             }
         } else {
             // Block id refers to big blocks
