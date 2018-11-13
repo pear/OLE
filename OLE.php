@@ -159,7 +159,7 @@ class OLE extends PEAR
         // Number of blocks in Short Block Allocation Table
         $sbbatBlockCount = $this->_readInt4($fh);
         // Block id of first sector in Master Block Allocation Table
-        $mbatFirstBlockId = $this->_readInt4($fh);
+        $mbatFirstBlockId = $this->_readSignedInt4($fh);
         // Number of blocks in Master Block Allocation Table
         $mbbatBlockCount = $this->_readInt4($fh);
         $this->bbat = array();
@@ -168,7 +168,7 @@ class OLE extends PEAR
         // Block Allocation Table
         $mbatBlocks = array();
         for ($i = 0; $i < 109; $i++) {
-            $mbatBlocks[] = $this->_readInt4($fh);
+            $mbatBlocks[] = $this->_readSignedInt4($fh);
         }
 
         // Read rest of Master Block Allocation Table (if any is left)
@@ -188,7 +188,7 @@ class OLE extends PEAR
             $pos = $this->_getBlockOffset($mbatBlocks[$i]);
             fseek($fh, $pos);
             for ($j = 0 ; $j < $this->bigBlockSize / 4; $j++) {
-                $this->bbat[] = $this->_readInt4($fh);
+                $this->bbat[] = $this->_readSignedInt4($fh);
             }
         }
 
@@ -202,7 +202,7 @@ class OLE extends PEAR
             return false;
         }
         for ($blockId = 0; $blockId < $shortBlockCount; $blockId++) {
-            $this->sbat[$blockId] = $this->_readInt4($sbatFh);
+            $this->sbat[$blockId] = $this->_readSignedInt4($sbatFh);
         }
         fclose($sbatFh);
 
@@ -291,6 +291,27 @@ class OLE extends PEAR
     }
 
     /**
+     * Reads a signed long (4 octets).
+     * @param   resource  file handle
+     * @return  int
+     * @access private
+     */
+    function _readSignedInt4($fh)
+    {
+        $tmp = $this->_readInt4($fh);
+
+        if (PHP_INT_SIZE == 4) {
+            // will overflow into a proper value
+            return $tmp;
+        }
+
+        // L stands for unsigned long, l for signed long
+        list(, $tmp) = unpack("s", pack("L", $tmp));
+
+        return $tmp;
+    }
+
+    /**
     * Gets information about all PPS's on the OLE container from the PPS WK's
     * creates an OLE_PPS object for each one.
     *
@@ -329,13 +350,13 @@ class OLE extends PEAR
             fseek($fh, 1, SEEK_CUR);
             $pps->Type    = $type;
             $pps->Name    = $name;
-            $pps->PrevPps = $this->_readInt4($fh);
-            $pps->NextPps = $this->_readInt4($fh);
-            $pps->DirPps  = $this->_readInt4($fh);
+            $pps->PrevPps = $this->_readSignedInt4($fh);
+            $pps->NextPps = $this->_readSignedInt4($fh);
+            $pps->DirPps  = $this->_readSignedInt4($fh);
             fseek($fh, 20, SEEK_CUR);
             $pps->Time1st = OLE::OLE2LocalDate(fread($fh, 8));
             $pps->Time2nd = OLE::OLE2LocalDate(fread($fh, 8));
-            $pps->_StartBlock = $this->_readInt4($fh);
+            $pps->_StartBlock = $this->_readSignedInt4($fh);
             $pps->Size = $this->_readInt4($fh);
             $pps->No = count($this->_list);
             $this->_list[] = $pps;
