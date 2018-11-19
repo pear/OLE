@@ -220,6 +220,12 @@ class OLE_ChainedBlockStream extends PEAR
             );
     }
 
+    function stream_flush()
+    {
+        // If not implemented, FALSE is assumed as the return value.
+        return false;
+    }
+
     // Methods used by stream_wrapper_register() that are not implemented:
     // bool stream_flush ( void )
     // int stream_write ( string data )
