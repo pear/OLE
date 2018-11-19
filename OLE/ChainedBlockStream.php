@@ -224,6 +224,10 @@ class OLE_ChainedBlockStream extends PEAR
             );
     }
 
+    /**
+     * PHP 5.6 for some reason wants this to be implemented. Currently returning false as if it wasn't implemented.
+     * @return boolean
+     */
     function stream_flush()
     {
         // If not implemented, FALSE is assumed as the return value.
@@ -231,7 +235,6 @@ class OLE_ChainedBlockStream extends PEAR
     }
 
     // Methods used by stream_wrapper_register() that are not implemented:
-    // bool stream_flush ( void )
     // int stream_write ( string data )
     // bool rename ( string path_from, string path_to )
     // bool mkdir ( string path, int mode, int options )
