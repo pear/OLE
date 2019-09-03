@@ -513,7 +513,7 @@ class OLE extends PEAR
     {
         $rawname = '';
         for ($i = 0; $i < strlen($ascii); $i++) {
-            $rawname .= $ascii{$i} . "\x00";
+            $rawname .= $ascii[$i] . "\x00";
         }
         return $rawname;
     }
