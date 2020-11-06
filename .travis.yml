@@ -8,6 +8,7 @@ php:
   - 7.2
   - 7.3
   - 7.4
+  - 8.0snapshot
   - nightly
 
 stages:
@@ -20,7 +21,7 @@ jobs:
     - php: nightly
   include:
     - stage: analyze
-      php: 7.2
+      php: 7.4
       install:
         - composer install --prefer-dist
       script:
