@@ -20,7 +20,7 @@ jobs:
     - php: nightly
   include:
     - stage: analyze
-      php: 7.2
+      php: 7.4
       install:
         - composer install --prefer-dist
       script:

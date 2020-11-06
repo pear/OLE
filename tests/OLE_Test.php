@@ -16,9 +16,9 @@
 //
 // $Id$
 
-class OLE_Test extends PHPUnit_Framework_TestCase
+class OLE_Test extends \LegacyPHPUnit\TestCase
 {
-    public static function setUpBeforeClass()
+    public static function legacySetUpBeforeClass()
     {
         date_default_timezone_set('UTC');
     }
