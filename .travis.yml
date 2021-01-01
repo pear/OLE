@@ -32,6 +32,7 @@ jobs:
 cache:
   directories:
     - $HOME/.composer/cache
+    - $HOME/.cache/cache
 
 install:
   - composer remove --no-update --dev
