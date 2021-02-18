@@ -72,7 +72,7 @@ class OLE_PPS_File extends OLE_PPS
     *
     * @access public
     * @param string $dir The dir to be used as temp dir
-    * @return true if given dir is valid, false otherwise
+    * @return boolean true if given dir is valid, false otherwise
     */
     function setTempDir($dir)
     {
@@ -128,4 +128,3 @@ class OLE_PPS_File extends OLE_PPS
         $this->ole->getStream($this);
     }
 }
-?>
