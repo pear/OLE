@@ -213,15 +213,15 @@ class OLE_PPS extends PEAR
     static function _savePpsSetPnt(&$raList, $to_save, $depth = 0) 
     {
       if ( !is_array($to_save) || (count($to_save) == 0) ) {
-        return 0xFFFFFFFF;
+        return OLE_FREESECT;
       }
       elseif( count($to_save) == 1 ) {
         $cnt = count($raList);
         // If the first entry, it's the root... Don't clone it!
         $raList[$cnt] = ( $depth == 0 ) ? $to_save[0] : clone $to_save[0];
         $raList[$cnt]->No = $cnt;
-        $raList[$cnt]->PrevPps = 0xFFFFFFFF;
-        $raList[$cnt]->NextPps = 0xFFFFFFFF;
+        $raList[$cnt]->PrevPps = OLE_FREESECT;
+        $raList[$cnt]->NextPps = OLE_FREESECT;
         $raList[$cnt]->DirPps  = self::_savePpsSetPnt($raList, @$raList[$cnt]->children, $depth++);
         return $cnt;
       }
@@ -242,4 +242,3 @@ class OLE_PPS extends PEAR
       }
     }
 }
-?>
