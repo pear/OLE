@@ -151,64 +151,64 @@ class OLE extends PEAR
      * Reads an OLE container from the contents of the stream given.
      *
      * @access public
-     * @param resource $stream
+     * @param resource $fh
      * @return mixed true on success, PEAR_Error on failure
      */
-    function readStream($stream)
+    function readStream($fh)
     {
-        $this->_file_handle = $stream;
+        $this->_file_handle = $fh;
 
-        $signature = fread($stream, 8);
+        $signature = fread($fh, 8);
         if (OLE_CFB_SIGNATURE != $signature) {
             return $this->raiseError("File doesn't seem to be an OLE container.");
         }
-        fseek($stream, 28);
-        if ($this->_readInt2($stream) != OLE_LITTLE_ENDIAN) {
+        fseek($fh, 28);
+        if ($this->_readInt2($fh) != OLE_LITTLE_ENDIAN) {
             // This shouldn't be a problem in practice
             return $this->raiseError("Only Little-Endian encoding is supported.");
         }
         // Size of blocks and short blocks in bytes
-        $this->bigBlockSize   = pow(2, $this->_readInt2($stream));
-        $this->smallBlockSize = pow(2, $this->_readInt2($stream));
+        $this->bigBlockSize   = pow(2, $this->_readInt2($fh));
+        $this->smallBlockSize = pow(2, $this->_readInt2($fh));
 
         // Skip UID, revision number and version number
-        fseek($stream, 44);
+        fseek($fh, 44);
         // Number of blocks in Big Block Allocation Table
-        $bbatBlockCount = $this->_readInt4($stream);
+        $bbatBlockCount = $this->_readInt4($fh);
 
         // Root chain 1st block
-        $directoryFirstBlockId = $this->_readInt4($stream);
+        $directoryFirstBlockId = $this->_readInt4($fh);
 
         // Skip unused bytes
-        fseek($stream, 56);
+        fseek($fh, 56);
         // Streams shorter than this are stored using small blocks
-        $this->bigBlockThreshold = $this->_readInt4($stream);
+        $this->bigBlockThreshold = $this->_readInt4($fh);
         // Block id of first sector in Short Block Allocation Table
-        $sbatFirstBlockId = $this->_readInt4($stream);
+        $sbatFirstBlockId = $this->_readInt4($fh);
         // Number of blocks in Short Block Allocation Table
-        $sbbatBlockCount = $this->_readInt4($stream);
+        $sbbatBlockCount = $this->_readInt4($fh);
         // Block id of first sector in Master Block Allocation Table
-        $mbatFirstBlockId = $this->_readInt4($stream);
+        $mbatFirstBlockId = $this->_readInt4($fh);
         // Number of blocks in Master Block Allocation Table
-        $mbbatBlockCount = $this->_readInt4($stream);
+        $mbbatBlockCount = $this->_readInt4($fh);
         $this->bbat = array();
 
         // Remaining 4 * 109 bytes of current block is beginning of Master
         // Block Allocation Table
         $mbatBlocks = array();
         for ($i = 0; $i < 109; $i++) {
-            $mbatBlocks[] = $this->_readInt4($stream);
+            $mbatBlocks[] = $this->_readInt4($fh);
         }
 
         // Read rest of Master Block Allocation Table (if any is left)
         $pos = $this->_getBlockOffset($mbatFirstBlockId);
         for ($i = 0; $i < $mbbatBlockCount; $i++) {
-            fseek($stream, $pos);
+            fseek($fh, $pos);
             for ($j = 0; $j < $this->bigBlockSize / 4 - 1; $j++) {
-                $mbatBlocks[] = $this->_readInt4($stream); // ffix - invalid block address check
+                $mbatBlocks[] = $this->_readInt4($fh); // ffix - invalid block address check
             }
             // Last block id in each block points to next block
-            $chainBlock = $this->_readInt4($stream);
+            $chainBlock = $this->_readInt4($fh);
             if ($chainBlock === OLE_ENDOFCHAIN) { // ENDOFCHAIN
                 break;
             }
@@ -220,9 +220,9 @@ class OLE extends PEAR
         // $mbatBlocks
         for ($i = 0; $i < $bbatBlockCount; $i++) {
             $pos = $this->_getBlockOffset($mbatBlocks[$i]);
-            fseek($stream, $pos);
+            fseek($fh, $pos);
             for ($j = 0 ; $j < $this->bigBlockSize / 4; $j++) {
-                $this->bbat[] = $this->_readInt4($stream);
+                $this->bbat[] = $this->_readInt4($fh);
             }
         }
 
