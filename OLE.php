@@ -23,12 +23,22 @@
 /**
 * Constants for OLE package
 */
-define('OLE_PPS_TYPE_ROOT',        5);
-define('OLE_PPS_TYPE_DIR',         1);
-define('OLE_PPS_TYPE_FILE',        2);
-define('OLE_DATA_SIZE_SMALL', 0x1000);
-define('OLE_LONG_INT_SIZE',        4);
-define('OLE_PPS_SIZE',          0x80);
+define('OLE_PPS_TYPE_ROOT',        0x05);
+define('OLE_PPS_TYPE_DIR',         0x01);
+define('OLE_PPS_TYPE_FILE',        0x02);
+define('OLE_DATA_SIZE_SMALL',    0x1000);
+define('OLE_LONG_INT_SIZE',           4);
+define('OLE_PPS_SIZE',             0x80);
+define('OLE_DIFSECT',        0xFFFFFFFC);
+define('OLE_FATSECT',        0xFFFFFFFD);
+define('OLE_ENDOFCHAIN',     0xFFFFFFFE);
+define('OLE_FREESECT',       0xFFFFFFFF);
+define('OLE_LITTLE_ENDIAN',      0xFFFE);
+define('OLE_VERSION_MAJOR_3',    0x0003);
+define('OLE_VERSION_MINOR',      0x003E);
+define('OLE_SECTOR_SHIFT_3',     0x0009);
+define('OLE_MINI_SECTOR_SHIFT',  0x0006);
+define('OLE_CFB_SIGNATURE', "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1");
 
 if (!class_exists('PEAR')) {
     require_once 'PEAR.php';
@@ -133,14 +143,27 @@ class OLE extends PEAR
         if (!$fh) {
             return $this->raiseError("Can't open file $file");
         }
+
+        return $this->readStream($fh);
+    }
+
+    /**
+     * Reads an OLE container from the contents of the stream given.
+     *
+     * @access public
+     * @param resource $fh
+     * @return mixed true on success, PEAR_Error on failure
+     */
+    function readStream($fh)
+    {
         $this->_file_handle = $fh;
 
         $signature = fread($fh, 8);
-        if ("\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1" != $signature) {
+        if (OLE_CFB_SIGNATURE != $signature) {
             return $this->raiseError("File doesn't seem to be an OLE container.");
         }
         fseek($fh, 28);
-        if (fread($fh, 2) != "\xFE\xFF") {
+        if ($this->_readInt2($fh) != OLE_LITTLE_ENDIAN) {
             // This shouldn't be a problem in practice
             return $this->raiseError("Only Little-Endian encoding is supported.");
         }
@@ -165,7 +188,7 @@ class OLE extends PEAR
         // Number of blocks in Short Block Allocation Table
         $sbbatBlockCount = $this->_readInt4($fh);
         // Block id of first sector in Master Block Allocation Table
-        $mbatFirstBlockId = $this->_readSignedInt4($fh);
+        $mbatFirstBlockId = $this->_readInt4($fh);
         // Number of blocks in Master Block Allocation Table
         $mbbatBlockCount = $this->_readInt4($fh);
         $this->bbat = array();
@@ -174,7 +197,7 @@ class OLE extends PEAR
         // Block Allocation Table
         $mbatBlocks = array();
         for ($i = 0; $i < 109; $i++) {
-            $mbatBlocks[] = $this->_readSignedInt4($fh);
+            $mbatBlocks[] = $this->_readInt4($fh);
         }
 
         // Read rest of Master Block Allocation Table (if any is left)
@@ -182,11 +205,16 @@ class OLE extends PEAR
         for ($i = 0; $i < $mbbatBlockCount; $i++) {
             fseek($fh, $pos);
             for ($j = 0; $j < $this->bigBlockSize / 4 - 1; $j++) {
-                $mbatBlocks[] = $this->_readInt4($fh);
+                $mbatBlocks[] = $this->_readInt4($fh); // ffix - invalid block address check
             }
             // Last block id in each block points to next block
-            $pos = $this->_getBlockOffset($this->_readInt4($fh));
+            $chainBlock = $this->_readInt4($fh);
+            if ($chainBlock === OLE_ENDOFCHAIN) { // ENDOFCHAIN
+                break;
+            }
+            $pos = $this->_getBlockOffset($chainBlock);
         }
+
 
         // Read Big Block Allocation Table according to chain specified by
         // $mbatBlocks
@@ -194,7 +222,7 @@ class OLE extends PEAR
             $pos = $this->_getBlockOffset($mbatBlocks[$i]);
             fseek($fh, $pos);
             for ($j = 0 ; $j < $this->bigBlockSize / 4; $j++) {
-                $this->bbat[] = $this->_readSignedInt4($fh);
+                $this->bbat[] = $this->_readInt4($fh);
             }
         }
 
@@ -207,8 +235,9 @@ class OLE extends PEAR
             // missing
             return false;
         }
+
         for ($blockId = 0; $blockId < $shortBlockCount; $blockId++) {
-            $this->sbat[$blockId] = $this->_readSignedInt4($sbatFh);
+            $this->sbat[$blockId] = $this->_readInt4($sbatFh);
         }
         fclose($sbatFh);
 
@@ -297,27 +326,6 @@ class OLE extends PEAR
     }
 
     /**
-     * Reads a signed long (4 octets).
-     * @param   resource  file handle
-     * @return  int
-     * @access private
-     */
-    function _readSignedInt4($fh)
-    {
-        $tmp = $this->_readInt4($fh);
-
-        if (PHP_INT_SIZE == 4) {
-            // will overflow into a proper value
-            return $tmp;
-        }
-
-        // L stands for unsigned long, l for signed long
-        list(, $tmp) = unpack("s", pack("L", $tmp));
-
-        return $tmp;
-    }
-
-    /**
     * Gets information about all PPS's on the OLE container from the PPS WK's
     * creates an OLE_PPS object for each one.
     *
@@ -353,16 +361,16 @@ class OLE extends PEAR
             default:
                 continue 2;
             }
-            fseek($fh, 1, SEEK_CUR);
+            fseek($fh, 1, SEEK_CUR); // skip Color Flag
             $pps->Type    = $type;
             $pps->Name    = $name;
-            $pps->PrevPps = $this->_readSignedInt4($fh);
-            $pps->NextPps = $this->_readSignedInt4($fh);
-            $pps->DirPps  = $this->_readSignedInt4($fh);
-            fseek($fh, 20, SEEK_CUR);
+            $pps->PrevPps = $this->_readInt4($fh); // Left Sibling ID
+            $pps->NextPps = $this->_readInt4($fh); // Right Sibling ID
+            $pps->DirPps  = $this->_readInt4($fh); // Child ID
+            fseek($fh, 20, SEEK_CUR); // skip CLSID (16 bytes) + State Bits
             $pps->Time1st = OLE::OLE2LocalDate(fread($fh, 8));
             $pps->Time2nd = OLE::OLE2LocalDate(fread($fh, 8));
-            $pps->_StartBlock = $this->_readSignedInt4($fh);
+            $pps->_StartBlock = $this->_readInt4($fh);
             $pps->Size = $this->_readInt4($fh);
             $pps->No = count($this->_list);
             $this->_list[] = $pps;
@@ -387,7 +395,7 @@ class OLE extends PEAR
                 $pps->children = array();
                 while ($nos) {
                     $no = array_pop($nos);
-                    if ($no != -1) {
+                    if ($no != OLE_FREESECT) {
                         $childPps = $this->_list[$no];
                         $nos[] = $childPps->PrevPps;
                         $nos[] = $childPps->NextPps;
@@ -412,11 +420,11 @@ class OLE extends PEAR
     {
         return isset($this->_list[$index]) &&
                ($pps = $this->_list[$index]) &&
-               ($pps->PrevPps == -1 ||
+               ($pps->PrevPps == OLE_FREESECT ||
                 $this->_ppsTreeComplete($pps->PrevPps)) &&
-               ($pps->NextPps == -1 ||
+               ($pps->NextPps == OLE_FREESECT ||
                 $this->_ppsTreeComplete($pps->NextPps)) &&
-               ($pps->DirPps == -1 ||
+               ($pps->DirPps == OLE_FREESECT ||
                 $this->_ppsTreeComplete($pps->DirPps));
     }
 
@@ -606,4 +614,3 @@ class OLE extends PEAR
         return floor($big_date);
     }
 }
-?>

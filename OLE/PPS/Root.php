@@ -159,8 +159,7 @@ class OLE_PPS_Root extends OLE_PPS
     function _calcSize(&$raList) 
     {
         // Calculate Basic Setting
-        list($iSBDcnt, $iBBcnt, $iPPScnt) = array(0,0,0);
-        $iSmallLen = 0;
+        $iBBcnt = 0;
         $iSBcnt = 0;
         for ($i = 0; $i < count($raList); $i++) {
             if ($raList[$i]->Type == OLE_PPS_TYPE_FILE) {
@@ -240,30 +239,26 @@ class OLE_PPS_Root extends OLE_PPS
   
         // Save Header
         fwrite($FILE,
-                  "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1"
-                  . "\x00\x00\x00\x00"
-                  . "\x00\x00\x00\x00"
-                  . "\x00\x00\x00\x00"
-                  . "\x00\x00\x00\x00"
-                  . pack("v", 0x3b)
-                  . pack("v", 0x03)
-                  . pack("v", -2)
-                  . pack("v", 9)
-                  . pack("v", 6)
-                  . pack("v", 0)
-                  . "\x00\x00\x00\x00"
-                  . "\x00\x00\x00\x00"
-                  . pack("V", $iBdCnt) 
-                  . pack("V", $iBBcnt+$iSBDcnt) //ROOT START
-                  . pack("V", 0)
-                  . pack("V", 0x1000)
-                  . pack("V", $iSBDcnt ? 0 : -2)                  //Small Block Depot
-                  . pack("V", $iSBDcnt)
+            OLE_CFB_SIGNATURE // Header Signature (8 bytes)
+            . "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" // Header CLSID (16 bytes)
+            . pack("v", OLE_VERSION_MINOR) // Minor Version (2 bytes)
+            . pack("v", OLE_VERSION_MAJOR_3) // Major Version (2 bytes)
+            . pack("v", OLE_LITTLE_ENDIAN) // Byte Order (2 bytes)
+            . pack("v", OLE_SECTOR_SHIFT_3) // Sector Shift (2 bytes)
+            . pack("v", OLE_MINI_SECTOR_SHIFT) // Mini Sector Shift (2 bytes)
+            . "\x00\x00\x00\x00\x00\x00" // Reserved (6 bytes)
+            . "\x00\x00\x00\x00" // Number of Directory Sectors (4 bytes)
+            . pack("V", $iBdCnt) // Number of FAT Sectors (4 bytes)
+            . pack("V", $iBBcnt+$iSBDcnt) //ROOT START, First Directory Sector Location (4 bytes)
+            . pack("V", 0) // Transaction Signature Number (4 bytes)
+            . pack("V", 0x00001000) // Mini Stream Cutoff Size (4 bytes)
+            . pack("V", $iSBDcnt ? 0 : OLE_ENDOFCHAIN) // First Mini FAT Sector Location (4 bytes)
+            . pack("V", $iSBDcnt) // Number of Mini FAT Sectors (4 bytes)
           );
         // Extra BDList Start, Count
         if ($iBdCnt < $i1stBdL) {
             fwrite($FILE,
-                      pack("V", -2).      // Extra BDList Start
+                      pack("V", OLE_ENDOFCHAIN).      // Extra BDList Start
                       pack("V", 0)        // Extra BDList Count
                   );
         } else {
@@ -274,9 +269,9 @@ class OLE_PPS_Root extends OLE_PPS
         for ($i = 0; $i < $i1stBdL && $i < $iBdCnt; $i++) {
             fwrite($FILE, pack("V", $iAll+$i));
         }
-        if ($i < $i1stBdL) {
+        if ($i < $i1stBdL) { // free sectors
             for ($j = 0; $j < ($i1stBdL-$i); $j++) {
-                fwrite($FILE, (pack("V", -1)));
+                fwrite($FILE, (pack("V", OLE_FREESECT)));
             }
         }
     }
@@ -357,7 +352,7 @@ class OLE_PPS_Root extends OLE_PPS
                     for ($j = 0; $j < ($iSmbCnt-1); $j++) {
                         fwrite($FILE, pack("V", $j+$iSmBlk+1));
                     }
-                    fwrite($FILE, pack("V", -2));
+                    fwrite($FILE, pack("V", OLE_ENDOFCHAIN));
                    
                     // Add to Data String(this will be written for RootEntry)
                     if ($raList[$i]->_PPS_FILE) {
@@ -382,7 +377,7 @@ class OLE_PPS_Root extends OLE_PPS
         $iSbCnt = floor($this->_BIG_BLOCK_SIZE / OLE_LONG_INT_SIZE);
         if ($iSmBlk % $iSbCnt) {
             for ($i = 0; $i < ($iSbCnt - ($iSmBlk % $iSbCnt)); $i++) {
-                fwrite($FILE, pack("V", -1));
+                fwrite($FILE, pack("V", OLE_FREESECT));
             }
         }
         return $sRes;
@@ -452,31 +447,31 @@ class OLE_PPS_Root extends OLE_PPS
             for ($i = 0; $i < ($iSbdSize - 1); $i++) {
                 fwrite($FILE, pack("V", $i+1));
             }
-            fwrite($FILE, pack("V", -2));
+            fwrite($FILE, pack("V", OLE_ENDOFCHAIN));
         }
         // Set for B
         for ($i = 0; $i < ($iBsize - 1); $i++) {
             fwrite($FILE, pack("V", $i+$iSbdSize+1));
         }
-        fwrite($FILE, pack("V", -2));
+        fwrite($FILE, pack("V", OLE_ENDOFCHAIN));
       
         // Set for PPS
         for ($i = 0; $i < ($iPpsCnt - 1); $i++) {
             fwrite($FILE, pack("V", $i+$iSbdSize+$iBsize+1));
         }
-        fwrite($FILE, pack("V", -2));
+        fwrite($FILE, pack("V", OLE_ENDOFCHAIN));
         // Set for BBD itself ( 0xFFFFFFFD : BBD)
         for ($i = 0; $i < $iBdCnt; $i++) {
-            fwrite($FILE, pack("V", 0xFFFFFFFD));
+            fwrite($FILE, pack("V", OLE_FATSECT));
         }
         // Set for ExtraBDList
         for ($i = 0; $i < $iBdExL; $i++) {
-            fwrite($FILE, pack("V", 0xFFFFFFFC));
+            fwrite($FILE, pack("V", OLE_DIFSECT));
         }
         // Adjust for Block
         if (($iAllW + $iBdCnt) % $iBbCnt) {
             for ($i = 0; $i < ($iBbCnt - (($iAllW + $iBdCnt) % $iBbCnt)); $i++) {
-                fwrite($FILE, pack("V", -1));
+                fwrite($FILE, pack("V", OLE_FREESECT));
             }
         }
         // Extra BDList
@@ -493,10 +488,10 @@ class OLE_PPS_Root extends OLE_PPS
             }
             if (($iBdCnt-$i1stBdL) % ($iBbCnt-1)) {
                 for ($i = 0; $i < (($iBbCnt - 1) - (($iBdCnt - $i1stBdL) % ($iBbCnt - 1))); $i++) {
-                    fwrite($FILE, pack("V", -1)); 
+                    fwrite($FILE, pack("V", OLE_FREESECT));
                 }
             }
-            fwrite($FILE, pack("V", -2));
+            fwrite($FILE, pack("V", OLE_ENDOFCHAIN));
         }
     }
 
@@ -522,22 +517,22 @@ class OLE_PPS_Root extends OLE_PPS
         {
           for($i = 0; $i<($num_sb_blocks-1); $i++)
             $data .= pack("V", $i+1);
-          $data .= pack("V", -2);
+          $data .= pack("V", OLE_ENDOFCHAIN);
         }
 
       for($i = 0; $i<($num_bb_blocks-1); $i++)
         $data .= pack("V", $i + $num_sb_blocks + 1);
-      $data .= pack("V", -2);
+      $data .= pack("V", OLE_ENDOFCHAIN);
 
       for($i = 0; $i<($num_pps_blocks-1); $i++)
         $data .= pack("V", $i + $num_sb_blocks + $num_bb_blocks + 1);
-      $data .= pack("V", -2);
+      $data .= pack("V", OLE_ENDOFCHAIN);
 
       for($i = 0; $i < $bbd_info["0xFFFFFFFD_blockchain_entries"]; $i++)
-        $data .= pack("V", 0xFFFFFFFD);
+        $data .= pack("V", OLE_FATSECT);
 
       for($i = 0; $i < $bbd_info["0xFFFFFFFC_blockchain_entries"]; $i++)
-        $data .= pack("V", 0xFFFFFFFC);
+        $data .= pack("V", OLE_DIFSECT);
 
       // Adjust for Block
       $all_entries = $num_sb_blocks + $num_bb_blocks + $num_pps_blocks + $bbd_info["0xFFFFFFFD_blockchain_entries"] + $bbd_info["0xFFFFFFFC_blockchain_entries"];
@@ -545,7 +540,7 @@ class OLE_PPS_Root extends OLE_PPS
         {
           $rest = $bbd_info["entries_per_block"] - ($all_entries % $bbd_info["entries_per_block"]);
           for($i = 0; $i < $rest; $i++)
-            $data .= pack("V", -1);
+            $data .= pack("V", OLE_FREESECT);
         }
 
       // Extra BDList
@@ -570,10 +565,10 @@ class OLE_PPS_Root extends OLE_PPS
             {
               $rest = ($bbd_info["entries_per_block"] - 1) - ($all_entries % ($bbd_info["entries_per_block"] - 1));
               for($i = 0; $i < $rest; $i++)
-                $data .= pack("V", -1);
+                $data .= pack("V", OLE_FREESECT);
             }
 
-          $data .= pack("V", -2);
+          $data .= pack("V", OLE_ENDOFCHAIN);
         }
 
       /*
@@ -600,38 +595,28 @@ class OLE_PPS_Root extends OLE_PPS
   
       // Save Header
       fwrite($FILE,
-             "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1"
-             . "\x00\x00\x00\x00"
-             . "\x00\x00\x00\x00"
-             . "\x00\x00\x00\x00"
-             . "\x00\x00\x00\x00"
-             . pack("v", 0x3b)
-             . pack("v", 0x03)
-             . pack("v", -2)
-             . pack("v", 9)
-             . pack("v", 6)
-             . pack("v", 0)
-             . "\x00\x00\x00\x00"
-             . "\x00\x00\x00\x00"
-             . pack("V", $bbd_info["blockchain_list_entries"]) 
-             . pack("V", $num_sb_blocks + $num_bb_blocks) //ROOT START
-             . pack("V", 0)
-             . pack("V", 0x1000)
-             );
-
-      //Small Block Depot
-      if($num_sb_blocks > 0)
-        fwrite($FILE, pack("V", 0));
-      else
-        fwrite($FILE, pack("V", -2));
-
-      fwrite($FILE, pack("V", $num_sb_blocks));
+          OLE_CFB_SIGNATURE // Header Signature (8 bytes)
+          . "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" // Header CLSID (16 bytes)
+          . pack("v", OLE_VERSION_MINOR) // Minor Version (2 bytes)
+          . pack("v", OLE_VERSION_MAJOR_3) // Major Version (2 bytes)
+          . pack("v", OLE_LITTLE_ENDIAN) // Byte Order (2 bytes)
+          . pack("v", OLE_SECTOR_SHIFT_3) // Sector Shift (2 bytes)
+          . pack("v", OLE_MINI_SECTOR_SHIFT) // Mini Sector Shift (2 bytes)
+          . "\x00\x00\x00\x00\x00\x00" // Reserved (6 bytes)
+          . "\x00\x00\x00\x00" // Number of Directory Sectors (4 bytes)
+          . pack("V", $bbd_info["blockchain_list_entries"]) // Number of FAT Sectors (4 bytes)
+          . pack("V", $num_sb_blocks + $num_bb_blocks) //ROOT START, First Directory Sector Location (4 bytes)
+          . pack("V", 0) // Transaction Signature Number (4 bytes)
+          . pack("V", 0x00001000) // Mini Stream Cutoff Size (4 bytes)
+          . pack("V", $num_sb_blocks > 0 ? 0 : OLE_ENDOFCHAIN) // First Mini FAT Sector Location (4 bytes)
+          . pack("V", $num_sb_blocks) // Number of Mini FAT Sectors (4 bytes)
+          );
 
       // Extra BDList Start, Count
       if($bbd_info["blockchain_list_entries"] < $bbd_info["header_blockchain_list_entries"])
         {
           fwrite($FILE,
-                 pack("V", -2).      // Extra BDList Start
+                 pack("V", OLE_ENDOFCHAIN).      // Extra BDList Start
                  pack("V", 0)        // Extra BDList Count
                  );
         }
@@ -650,7 +635,7 @@ class OLE_PPS_Root extends OLE_PPS
         {
           for($j = 0; $j < ($bbd_info["header_blockchain_list_entries"]-$i); $j++) 
             {
-              fwrite($FILE, (pack("V", -1)));
+              fwrite($FILE, (pack("V", OLE_FREESECT)));
             }
         }
     }
@@ -713,7 +698,6 @@ class OLE_PPS_Root extends OLE_PPS
     function dump($data, $from, $to)
     {
       $chars = array();
-      $i = 0;
       for($i = $from; $i < $to; $i++)
         {
           if(sizeof($chars) == 16)
@@ -735,9 +719,6 @@ class OLE_PPS_Root extends OLE_PPS
           foreach($chars as $char)
             printf(" %02X", $char);
           print " |\n";
-
-          $chars = array();
         }
     }
 }
-?>

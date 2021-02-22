@@ -110,7 +110,7 @@ class OLE_ChainedBlockStream extends PEAR
 
             // Block id refers to small blocks
             $rootPos = 0;
-            while ($blockId != -2) {
+            while ($blockId != OLE_ENDOFCHAIN) {
                 $pos = $rootPos + $blockId * $this->ole->smallBlockSize;
 
                 $blockId = $this->ole->sbat[$blockId];                
@@ -119,7 +119,7 @@ class OLE_ChainedBlockStream extends PEAR
             }
         } else {
             // Block id refers to big blocks
-            while ($blockId != -2) {
+            while ($blockId != OLE_ENDOFCHAIN) {
                 $pos = $this->ole->_getBlockOffset($blockId);
                 fseek($this->ole->_file_handle, $pos);
                 $this->data .= fread($this->ole->_file_handle, $this->ole->bigBlockSize);
@@ -139,7 +139,6 @@ class OLE_ChainedBlockStream extends PEAR
 
     /**
      * Implements support for fclose().
-     * @return  string
      */
     function stream_close()
     {
@@ -204,7 +203,7 @@ class OLE_ChainedBlockStream extends PEAR
             $this->pos = $offset;
         } elseif ($whence == SEEK_CUR && -$offset <= $this->pos) {
             $this->pos += $offset;
-        } elseif ($whence == SEEK_END && -$offset <= sizeof($this->data)) {
+        } elseif ($whence == SEEK_END && -$offset <= strlen($this->data)) {
             $this->pos = strlen($this->data) + $offset;
         } else {
             return false;
@@ -245,5 +244,3 @@ class OLE_ChainedBlockStream extends PEAR
     // bool dir_rewinddir ( void )
     // bool dir_closedir ( void )
 }
-
-?>
