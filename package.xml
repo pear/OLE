@@ -22,8 +22,8 @@
   <api>1.0.0RC3</api>
  </version>
  <stability>
-  <release>beta</release>
-  <api>beta</api>
+  <release>stable</release>
+  <api>stable</api>
  </stability>
  <license uri="http://www.php.net/license">PHP</license>
  <notes>
@@ -72,8 +72,8 @@ Fixing install dir
     <api>0.3</api>
    </version>
    <stability>
-    <release>beta</release>
-    <api>beta</api>
+    <release>stable</release>
+    <api>stable</api>
    </stability>
    <date>2003-08-21</date>
    <license uri="http://www.php.net/license">PHP</license>
@@ -88,8 +88,8 @@ Fixing install dir
     <api>0.4</api>
    </version>
    <stability>
-    <release>beta</release>
-    <api>beta</api>
+    <release>stable</release>
+    <api>stable</api>
    </stability>
    <date>2003-09-25</date>
    <license uri="http://www.php.net/license">PHP</license>
@@ -105,8 +105,8 @@ Fixing install dir
     <api>0.5</api>
    </version>
    <stability>
-    <release>beta</release>
-    <api>beta</api>
+    <release>stable</release>
+    <api>stable</api>
    </stability>
    <date>2003-12-14</date>
    <license uri="http://www.php.net/license">PHP</license>
@@ -127,8 +127,8 @@ Fixing install dir
     <api>0.6.0</api>
    </version>
    <stability>
-    <release>beta</release>
-    <api>beta</api>
+    <release>stable</release>
+    <api>stable</api>
    </stability>
    <date>2007-12-09</date>
    <license uri="http://www.php.net/license">PHP</license>
@@ -150,8 +150,8 @@ Rewrite of parser (no change to writer):
     <api>0.6.1</api>
    </version>
    <stability>
-    <release>beta</release>
-    <api>beta</api>
+    <release>stable</release>
+    <api>stable</api>
    </stability>
    <date>2007-12-18</date>
    <license uri="http://www.php.net/license">PHP</license>
@@ -166,8 +166,8 @@ Rewrite of parser (no change to writer):
     <api>0.6.2</api>
    </version>
    <stability>
-    <release>beta</release>
-    <api>beta</api>
+    <release>stable</release>
+    <api>stable</api>
    </stability>
    <date>2012-01-26</date>
    <license uri="http://www.php.net/license">PHP</license>
@@ -181,8 +181,8 @@ Rewrite of parser (no change to writer):
     <api>1.0.0RC2</api>
    </version>
    <stability>
-    <release>beta</release>
-    <api>beta</api>
+    <release>stable</release>
+    <api>stable</api>
    </stability>
    <date>2012-01-26</date>
    <license uri="http://www.php.net/license">PHP</license>
@@ -198,8 +198,8 @@ Bug #17685 OLE doesn&apos;t save multistreams
     <api>1.0.0RC3</api>
    </version>
    <stability>
-    <release>beta</release>
-    <api>beta</api>
+    <release>stable</release>
+    <api>stable</api>
    </stability>
    <date>2017-06-20</date>
    <license uri="http://www.php.net/license">PHP</license>
