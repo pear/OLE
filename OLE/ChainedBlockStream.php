@@ -160,7 +160,7 @@ class OLE_ChainedBlockStream extends PEAR
         if ($this->stream_eof()) {
             return false;
         }
-        $s = substr($this->data, $this->pos, $count);
+        $s = substr($this->data, $this->pos ?? 0, $count);
         $this->pos += $count;
         return $s;
     }
