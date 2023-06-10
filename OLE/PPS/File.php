@@ -44,6 +44,13 @@ class OLE_PPS_File extends OLE_PPS
     var $_tmp_dir;
 
     /**
+    * The temporary file handle
+    * @deprecated Might not be needed by anything
+    * @var string
+    */
+    var $_tmp_filename;
+
+    /**
     * The constructor
     *
     * @access public
