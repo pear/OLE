@@ -70,6 +70,8 @@ class OLE_ChainedBlockStream extends PEAR
      */
     var $pos;
 
+    var $context;
+
     /**
      * Implements support for fopen().
      * For creating streams using this wrapper, use OLE_PPS_File::getStream().

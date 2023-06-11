@@ -105,6 +105,12 @@ class OLE extends PEAR
     var $bigBlockSize;
 
     /**
+    * The big block threshhold.
+    * @var int
+    */
+    var $bigBlockThreshold;
+
+    /**
     * Size of small blocks. This is usually 64.
     * @var  int  number of octets per block
     */
