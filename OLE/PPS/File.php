@@ -45,10 +45,9 @@ class OLE_PPS_File extends OLE_PPS
 
     /**
     * The temporary file handle
-    * @deprecated Might not be needed by anything
-    * @var string
+    * @var resource
     */
-    var $_tmp_filename;
+    var $_PPS_FILE;
 
     /**
     * The constructor
@@ -98,8 +97,8 @@ class OLE_PPS_File extends OLE_PPS
     */
     function init()
     {
-        $this->_tmp_filename = tempnam($this->_tmp_dir, "OLE_PPS_File");
-        $fh = @fopen($this->_tmp_filename, "w+b");
+        $_tmp_filename = tempnam($this->_tmp_dir, "OLE_PPS_File");
+        $fh = @fopen($_tmp_filename, "w+b");
         if ($fh == false) {
             return $this->raiseError("Can't create temporary file");
         }
