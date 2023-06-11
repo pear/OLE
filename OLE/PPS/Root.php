@@ -54,6 +54,8 @@ class OLE_PPS_Root extends OLE_PPS
 
     var $_tmp_filename;
 
+    var $_FILEH_;
+
     /**
     * Constructor
     *
