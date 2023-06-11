@@ -49,6 +49,8 @@ class OLE_PPS_File extends OLE_PPS
     */
     var $_PPS_FILE;
 
+    var $_tmp_filename;
+
     /**
     * The constructor
     *
@@ -97,8 +99,8 @@ class OLE_PPS_File extends OLE_PPS
     */
     function init()
     {
-        $_tmp_filename = tempnam($this->_tmp_dir, "OLE_PPS_File");
-        $fh = @fopen($_tmp_filename, "w+b");
+        $this->_tmp_filename = tempnam($this->_tmp_dir, "OLE_PPS_File");
+        $fh = @fopen($this->_tmp_filename, "w+b");
         if ($fh == false) {
             return $this->raiseError("Can't create temporary file");
         }
