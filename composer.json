@@ -41,5 +41,10 @@
     "support": {
         "issues": "http://pear.php.net/bugs/search.php?cmd=display&package_name[]=OLE",
         "source": "https://github.com/pear/OLE"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.0"
+        }
     }
 }
