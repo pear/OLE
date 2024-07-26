@@ -17,6 +17,7 @@
     ],
     "require": {
         "php": ">=5.6",
+        "pear/pear-core-minimal": "^1.0",
         "pear/pear_exception": "^1.0"
     },
     "require-dev": {
