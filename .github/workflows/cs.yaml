@@ -27,7 +27,7 @@ jobs:
           tools: php-cs-fixer:${{ env.PHP_CS_FIXER_VERSION }}
 
       - name: Restore PHP-CS-Fixer cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .php_cs.cache
           key: "php-cs-fixer"
